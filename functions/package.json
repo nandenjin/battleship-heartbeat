@@ -21,8 +21,19 @@
     "@typescript-eslint/parser": "^4.9.0",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.15.0",
+    "husky": ">=4",
+    "lint-staged": ">=10",
     "prettier": "^2.2.1",
     "typescript": "~4.1.2"
   },
-  "private": true
+  "private": true,
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,js}": "eslint --cache --fix",
+    "*.{js,ts,json}": "prettier --write"
+  }
 }
