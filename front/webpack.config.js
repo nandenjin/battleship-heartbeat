@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { resolve } = require('path')
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const { VueLoaderPlugin } = require('vue-loader')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
   entry: './index.ts',
   output: {
     path: resolve('dist'),
-    filename: '[contenthash].js'
+    filename: '[contenthash].js',
   },
   module: {
     rules: [
@@ -17,21 +17,18 @@ module.exports = {
         test: /\.ts$/,
         loader: 'ts-loader',
         options: {
-          appendTsSuffixTo: [/\.vue$/]
-        }
+          appendTsSuffixTo: [/\.vue$/],
+        },
       },
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
-      }
-    ]
+        loader: 'vue-loader',
+      },
+    ],
   },
-  plugins: [
-    new VueLoaderPlugin(),
-    new HtmlWebpackPlugin()
-  ],
+  plugins: [new VueLoaderPlugin(), new HtmlWebpackPlugin()],
   devtool: 'inline-source-map',
   devServer: {
-    port: 3000
-  }
+    port: 3000,
+  },
 }
