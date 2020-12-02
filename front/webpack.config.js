@@ -26,6 +26,9 @@ module.exports = {
       },
     ],
   },
+  resolve: {
+    extensions: ['.ts', '.js', '.vue'],
+  },
   plugins: [new VueLoaderPlugin(), new HtmlWebpackPlugin()],
   devtool: 'inline-source-map',
   devServer: {
