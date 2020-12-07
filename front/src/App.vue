@@ -7,12 +7,14 @@
     <div v-else>
       <button @click="signin">Signin</button>
     </div>
+    <router-view />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
 import { useStore } from 'vuex'
+import { RouterView } from 'vue-router'
 import { key, SIGNIN, SIGNOUT, State } from './store'
 
 export default defineComponent({
@@ -23,6 +25,9 @@ export default defineComponent({
       signin: () => store.dispatch(SIGNIN),
       signout: () => store.dispatch(SIGNOUT),
     }
+  },
+  components: {
+    RouterView,
   },
 })
 </script>

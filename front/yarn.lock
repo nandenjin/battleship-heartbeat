@@ -5163,6 +5163,11 @@ vue-loader@^16.1.0:
     hash-sum "^2.0.0"
     loader-utils "^2.0.0"
 
+vue-router@^4.0.0-rc.6:
+  version "4.0.0-rc.6"
+  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-4.0.0-rc.6.tgz#8fa9e2d612c28ccf9b2bfa9421052932808ce24b"
+  integrity sha512-hVHC8A4/0yku1Z6+oUtX9odeHv78XwDI7putt1hd7os27P7mLabkjArN7f3TI3e/cz17MxAUz5Yp+m8ZE3sPsw==
+
 vue@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.0.3.tgz#ad94a475e6ebbf3904673b6a0ae46e47b957bd72"
