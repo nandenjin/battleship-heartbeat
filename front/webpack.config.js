@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+require('dotenv').config({ path: '../.env' })
 const { resolve } = require('path')
+const { DefinePlugin } = require('webpack')
 const { VueLoaderPlugin } = require('vue-loader')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
@@ -29,7 +31,13 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js', '.vue'],
   },
-  plugins: [new VueLoaderPlugin(), new HtmlWebpackPlugin()],
+  plugins: [
+    new VueLoaderPlugin(),
+    new DefinePlugin({
+      FIREBASE_CONFIG: process.env.FIREBASE_CONFIG || '{}',
+    }),
+    new HtmlWebpackPlugin(),
+  ],
   devtool: 'inline-source-map',
   devServer: {
     port: 3000,

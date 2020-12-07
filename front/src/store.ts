@@ -30,15 +30,6 @@ export const store = createStore<State>({
   },
 })
 
-firebase.initializeApp({
-  apiKey: 'AIzaSyDaHeLY34eviNVYo5PW3BIoAhTrxCayAHs',
-  authDomain: 'battleship-heartbeat.firebaseapp.com',
-  databaseURL: 'https://battleship-heartbeat.firebaseio.com',
-  projectId: 'battleship-heartbeat',
-  storageBucket: 'battleship-heartbeat.appspot.com',
-  messagingSenderId: '473534340935',
-  appId: '1:473534340935:web:a0b42806768f4414677662',
-  measurementId: 'G-F6JZC63NQH',
-})
+firebase.initializeApp(FIREBASE_CONFIG)
 
 firebase.auth().onAuthStateChanged(user => store.commit(SET_USER, user))
