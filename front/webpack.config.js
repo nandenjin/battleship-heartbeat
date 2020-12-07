@@ -35,6 +35,8 @@ module.exports = {
     new VueLoaderPlugin(),
     new DefinePlugin({
       FIREBASE_CONFIG: process.env.FIREBASE_CONFIG || '{}',
+      __VUE_OPTIONS_API__: false,
+      __VUE_PROD_DEVTOOLS__: false,
     }),
     new HtmlWebpackPlugin(),
   ],
