@@ -2,6 +2,49 @@
   /* Visit https://firebase.google.com/docs/database/security to learn more about security rules. */
   "rules": {
     ".read": false,
-    ".write": false
+    ".write": false,
+    "games": {
+      ".write": "auth != null",
+      "$gid": {
+        ".read": true,
+        ".write": "auth != null && !data.exists() && newData.hasChildren(['createdBy'])",
+        "createdBy": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "host": {
+          ".write": "auth != null && !data.exists() && newData.hasChildren(['uid'])",
+          "uid": {
+            ".validate": "auth != null && newData.val() == auth.uid"
+          },
+          "board": {
+            ".validate": "newData.isNumber()"
+          },
+          "attack": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "guest": {
+          ".write": "auth != null && !data.exists() && newData.hasChildren(['uid'])",
+          "uid": {
+            ".validate": "auth != null && newData.val() == auth.uid"
+          },
+          "board": {
+            ".validate": "newData.isNumber()"
+          },
+          "attack": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
   }
 }
