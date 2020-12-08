@@ -12,24 +12,23 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, watch } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { useStore } from 'vuex'
-import { RouterView, useRoute } from 'vue-router'
+import { RouterView } from 'vue-router'
 import { key, SIGNIN, SIGNOUT, State } from './store'
 
 export default defineComponent({
+  components: {
+    RouterView,
+  },
   setup() {
     const store = useStore<State>(key)
-    const route = useRoute()
 
     return {
       uid: computed(() => store.state.uid),
       signin: () => store.dispatch(SIGNIN),
       signout: () => store.dispatch(SIGNOUT),
     }
-  },
-  components: {
-    RouterView,
   },
 })
 </script>

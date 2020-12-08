@@ -1,6 +1,8 @@
 <template>
   <div class="board" :style="{ gridTemplateColumns: `repeat(${width}, 1fr)` }">
     <span
+      v-for="i of width * height"
+      :key="i"
       class="cell"
       :class="{
         'is-focused-host': hostCursor === i - 1,
@@ -10,9 +12,7 @@
         'host-attack': getBit(hostAttack, i - 1),
         'guest-attack': getBit(guestAttack, i - 1),
       }"
-      v-for="i of width * height"
-      :key="i"
-    ></span>
+    />
   </div>
 </template>
 
@@ -26,12 +26,15 @@ export default defineComponent({
   props: {
     cursors: {
       type: Array as PropType<{ role: Role; cursor: number }[]>,
+      default: [],
     },
     boards: {
       type: Array as PropType<{ role: Role; board: number[] }[]>,
+      default: [],
     },
     attacks: {
       type: Array as PropType<{ role: Role; attack: number[] }[]>,
+      default: [],
     },
   },
   setup(props) {

@@ -12,7 +12,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Commit, Store, useStore } from 'vuex'
+import { Store, useStore } from 'vuex'
 import {
   GameStatus,
   JOIN,

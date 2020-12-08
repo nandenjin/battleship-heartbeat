@@ -16,8 +16,8 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
-import { Commit, Store, useStore } from 'vuex'
-import { JOIN, key, Role, State, SUBMIT_BOARD } from './store'
+import { useStore } from 'vuex'
+import { JOIN, key, State, SUBMIT_BOARD } from './store'
 import { BOARD_H, BOARD_W, PIECE_LENGTH } from './config'
 import Board from './Board.vue'
 import { getBit, isEmpty } from './util'
@@ -34,9 +34,6 @@ export default defineComponent({
   components: { Board },
   setup() {
     const store = useStore<State>(key)
-    const isPlayer = computed(() =>
-      [Role.HOST, Role.GUEST].includes(store.getters.role)
-    )
 
     return {
       gid: computed(() => store.state.gid),
