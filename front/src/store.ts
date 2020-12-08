@@ -5,10 +5,12 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/database'
 import { router } from './router'
+import { BOARD_H, BOARD_W } from './config'
 
 export interface State {
   uid: string | null
   gid: string | null
+  cursor: number
 }
 
 export const SET_USER = 'set_user'
@@ -16,6 +18,7 @@ export const SIGNIN = 'signin'
 export const SIGNOUT = 'signout'
 export const SET_GAME = 'set_game'
 export const CREATE_GAME = 'create_game'
+export const SET_CURSOR = 'set_cursor'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
@@ -24,6 +27,7 @@ export const store = createStore<State>({
   state: () => ({
     uid: null,
     gid: null,
+    cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
   }),
   mutations: {
     [SET_USER]: (state, payload: firebase.User | null) => {
@@ -31,6 +35,9 @@ export const store = createStore<State>({
     },
     [SET_GAME]: (state, payload: string) => {
       state.gid = payload ?? null
+    },
+    [SET_CURSOR]: (state, cursor: number) => {
+      state.cursor = cursor
     },
   },
   actions: {
