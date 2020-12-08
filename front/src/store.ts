@@ -7,10 +7,25 @@ import 'firebase/database'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
 
+export enum Role {
+  HOST,
+  GUEST,
+  AUDIENCE,
+}
+
+export interface PlayerState {
+  uid: string
+  cursor: number
+}
+
 export interface State {
   uid: string | null
   gid: string | null
   cursor: number
+  players: {
+    host: PlayerState | null
+    guest: PlayerState | null
+  }
 }
 
 export const SET_USER = 'set_user'
@@ -28,7 +43,19 @@ export const store = createStore<State>({
     uid: null,
     gid: null,
     cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
+    players: {
+      host: null,
+      guest: null,
+    },
   }),
+  getters: {
+    role: ({ uid, players }) =>
+      players.host?.uid === uid
+        ? Role.HOST
+        : players.guest?.uid === uid
+        ? Role.GUEST
+        : Role.AUDIENCE,
+  },
   mutations: {
     [SET_USER]: (state, payload: firebase.User | null) => {
       state.uid = payload ? payload.uid : null

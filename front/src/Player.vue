@@ -2,7 +2,10 @@
   <div class="board" :style="{ gridTemplateColumns: `repeat(${width}, 1fr)` }">
     <span
       class="cell"
-      :class="{ 'is-focused': cursor === i - 1 }"
+      :class="{
+        'is-focused-host': players.host?.cursor === i - 1,
+        'is-focused-guest': players.guest?.cursor === i - 1,
+      }"
       v-for="i of width * height"
       :key="i"
     ></span>
@@ -13,7 +16,7 @@
 import { computed, defineComponent, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
-import { key, SET_CURSOR, SET_GAME, State } from './store'
+import { key, Role, SET_CURSOR, SET_GAME, State } from './store'
 import { BOARD_H, BOARD_W } from './config'
 import { off } from 'process'
 
@@ -31,8 +34,14 @@ export default defineComponent({
 
     watch(route, () => loadFromRoute())
 
+    const isPlayer = computed(() =>
+      [Role.HOST, Role.GUEST].includes(store.getters.role)
+    )
     const cursor = computed(() => store.state.cursor)
     const onKeyDown = ({ key }: KeyboardEvent) => {
+      // Permission
+      if (!isPlayer) return
+
       let offset = 0
       switch (key) {
         case 'ArrowUp':
@@ -74,6 +83,8 @@ export default defineComponent({
       width: BOARD_W,
       height: BOARD_H,
       cursor,
+      isPlayer,
+      players: store.state.players,
     }
   },
 })
@@ -89,8 +100,12 @@ export default defineComponent({
     margin: 1px;
     border: 2px solid transparent;
 
-    &.is-focused {
-      border-color: #06f;
+    &.is-focused-host {
+      border-color: #f08;
+    }
+
+    &.is-focused-guest {
+      border-color: #08f;
     }
 
     &::before {
