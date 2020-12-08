@@ -5,12 +5,12 @@
       :key="i"
       class="cell"
       :class="{
-        'is-focused-host': hostCursor === i - 1,
-        'is-focused-guest': guestCursor === i - 1,
-        'host-piece': getBit(hostBoard, i - 1),
-        'guest-piece': getBit(guestBoard, i - 1),
-        'host-attack': getBit(hostAttack, i - 1),
-        'guest-attack': getBit(guestAttack, i - 1),
+        'is-focused--host': hostCursor === i - 1,
+        'is-focused--guest': guestCursor === i - 1,
+        'piece--host': getBit(hostBoard, i - 1),
+        'piece--guest': getBit(guestBoard, i - 1),
+        'attack--host': getBit(hostAttack, i - 1),
+        'attack--guest': getBit(guestAttack, i - 1),
       }"
     />
   </div>
@@ -68,8 +68,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-$color-host: #f08;
-$color-guest: #08f;
+@import './style.scss';
 
 .board {
   display: grid;
@@ -81,11 +80,11 @@ $color-guest: #08f;
     margin: 1px;
     border: 2px solid transparent;
 
-    &.is-focused-host {
+    &.is-focused--host {
       border-color: $color-host;
     }
 
-    &.is-focused-guest {
+    &.is-focused--guest {
       border-color: $color-guest;
     }
 
@@ -95,8 +94,8 @@ $color-guest: #08f;
       margin-bottom: 100%;
     }
 
-    &.host-piece::after,
-    &.guest-piece::after {
+    &.piece--host::after,
+    &.piece--guest::after {
       content: '';
       display: inline-block;
       position: absolute;
@@ -109,11 +108,11 @@ $color-guest: #08f;
       height: 50%;
     }
 
-    &.host-piece::after {
+    &.piece--host::after {
       background-color: $color-host;
     }
 
-    &.guest-piece::after {
+    &.piece--guest::after {
       background-color: $color-guest;
     }
   }

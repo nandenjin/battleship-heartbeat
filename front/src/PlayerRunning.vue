@@ -1,13 +1,17 @@
 <template>
   <div>
-    <board
-      :cursors="[{ role: Role.GUEST, cursor: guest.cursor }]"
-      :boards="[{ role: Role.HOST, board: host.board }]"
-    />
-    <board
-      :cursors="[{ role: Role.HOST, cursor: host.cursor }]"
-      :boards="[{ role: Role.GUEST, board: guest.board }]"
-    />
+    <div class="board-wrap board-wrap--host">
+      <board
+        :cursors="[{ role: Role.GUEST, cursor: guest.cursor }]"
+        :boards="[{ role: Role.HOST, board: host.board }]"
+      />
+    </div>
+    <div class="board-wrap board-wrap--guest">
+      <board
+        :cursors="[{ role: Role.HOST, cursor: host.cursor }]"
+        :boards="[{ role: Role.GUEST, board: guest.board }]"
+      />
+    </div>
   </div>
 </template>
 
@@ -30,3 +34,22 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+@import './style.scss';
+
+.board-wrap {
+  display: inline-block;
+  border: 2px solid #888;
+  margin: 10px;
+  padding: 5px;
+
+  &--host {
+    border-color: $color-host;
+  }
+
+  &--guest {
+    border-color: $color-guest;
+  }
+}
+</style>
