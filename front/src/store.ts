@@ -6,7 +6,7 @@ import 'firebase/auth'
 import 'firebase/database'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
-import { isEqual } from './util'
+import { isEqual, ntos, ston } from './util'
 
 export enum GameStatus {
   PREPARING,
@@ -24,8 +24,8 @@ export enum Role {
 export interface PlayerState {
   uid: string
   cursor: number
-  board: number[]
-  attack: number[]
+  board?: number[] // ToDo: remove and localize
+  attack?: number[] // ToDo: remove and localize
 }
 
 export interface State {
@@ -49,6 +49,7 @@ export const JOIN = 'join'
 export const SET_HOST = 'set_host'
 export const SET_GUEST = 'set_guest'
 export const SET_BOARD = 'set_board'
+export const SUBMIT_BOARD = 'submit_board'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
@@ -75,8 +76,8 @@ export const store = createStore<State>({
       if (!players.host?.board || !players.guest?.board) {
         return GameStatus.PREPARING
       } else if (
-        isEqual(players.host.board, players.guest.attack) ||
-        isEqual(players.guest.board, players.host.attack)
+        isEqual(players.host.board, players.guest.attack || []) ||
+        isEqual(players.guest.board, players.host.attack || [])
       ) {
         return GameStatus.FINISHED
       }
@@ -126,10 +127,13 @@ export const store = createStore<State>({
       if ([Role.HOST, Role.GUEST].includes(getters.role)) return
       console.log(state)
       if (!state.players.host) {
-        await gameRef?.child(`host/uid`).set(state.uid)
+        await getPlayerRef(Role.HOST)?.child(`uid`).set(state.uid)
       } else if (!state.players.guest) {
-        await gameRef?.child(`guest/uid`).set(state.uid)
+        await getPlayerRef(Role.HOST)?.child(`uid`).set(state.uid)
       }
+    },
+    [SUBMIT_BOARD]: async ({ state, getters }) => {
+      await getPlayerRef(getters.role)?.child(`board`).set(ntos(state.board))
     },
   },
 })
@@ -139,6 +143,15 @@ firebase.initializeApp(FIREBASE_CONFIG)
 firebase.auth().onAuthStateChanged(user => store.commit(SET_USER, user))
 
 let gameRef: firebase.database.Reference | null = null
+const getPlayerRef = (role: Role): firebase.database.Reference | null => {
+  switch (role) {
+    case Role.HOST:
+      return gameRef?.child(`host`) || null
+    case Role.GUEST:
+      return gameRef?.child(`guest`) || null
+  }
+  return null
+}
 
 store.watch(
   state => state.gid,
@@ -146,8 +159,18 @@ store.watch(
     router.replace('/' + gid ?? '')
     gameRef = firebase.database().ref(`/games/${gid}`)
 
-    gameRef.child('host').on('value', v => store.commit(SET_HOST, v.val()))
-    gameRef.child('guest').on('value', v => store.commit(SET_GUEST, v.val()))
+    const convert = (s: Record<string, never>): PlayerState =>
+      ({
+        ...(s || {}),
+        board: s.board ? ston(s.board) : undefined,
+        attack: s.attack ? ston(s.attack) : undefined,
+      } as PlayerState)
+    gameRef
+      .child('host')
+      .on('value', v => store.commit(SET_HOST, convert(v.val())))
+    gameRef
+      .child('guest')
+      .on('value', v => store.commit(SET_GUEST, convert(v.val())))
   }
 )
 

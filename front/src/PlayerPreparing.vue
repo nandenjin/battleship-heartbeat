@@ -1,7 +1,16 @@
 <template>
   <div>
-    <board :cursors="[{ role, cursor }]" :boards="[{ role, board }]" />
-    <button :disabled="pieceLength(board) !== PIECE_LENGTH">Submit</button>
+    <board
+      :cursors="[{ role, cursor }]"
+      :boards="[{ role, board: isCompleted ? myState?.board || [] : board }]"
+    />
+    <button
+      :disabled="pieceLength(board) !== PIECE_LENGTH"
+      @click="submitBoard"
+    >
+      Submit
+    </button>
+    <span v-if="isCompleted">Waitiing other player...</span>
   </div>
 </template>
 
@@ -18,6 +27,7 @@ import {
   SET_CURSOR,
   SET_GAME,
   State,
+  SUBMIT_BOARD,
 } from './store'
 import { BOARD_H, BOARD_W, PIECE_LENGTH } from './config'
 import { getBit, invBit, isEmpty, setBit } from './util'
@@ -110,15 +120,21 @@ export default defineComponent({
       gid: computed(() => store.state.gid),
       width: BOARD_W,
       height: BOARD_H,
+      PIECE_LENGTH,
       board: computed(() => store.state.board),
       cursor: computed(() => store.state.cursor),
       role: computed(() => store.getters.role),
+      myState: computed(() => store.getters.myState),
+      isCompleted: computed(
+        () =>
+          store.getters.myState && !isEmpty(store.getters.myState?.board || [])
+      ),
       join: () => {
         store.dispatch(JOIN)
       },
       getBit,
       pieceLength,
-      PIECE_LENGTH,
+      submitBoard: () => store.dispatch(SUBMIT_BOARD),
     }
   },
 })
