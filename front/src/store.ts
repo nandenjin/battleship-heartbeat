@@ -10,8 +10,7 @@ import { isEqual, ntos, ston } from './util'
 
 export enum GameStatus {
   PREPARING,
-  WAITING_HOST,
-  WAITING_GUEST,
+  RUNNING,
   FINISHED,
 }
 
@@ -81,7 +80,7 @@ export const store = createStore<State>({
       ) {
         return GameStatus.FINISHED
       }
-      return GameStatus.FINISHED
+      return GameStatus.RUNNING
     },
     myState: ({ players }, { role }): PlayerState | null => {
       switch (role) {
