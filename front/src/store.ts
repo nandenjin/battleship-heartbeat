@@ -34,6 +34,9 @@ export const SIGNOUT = 'signout'
 export const SET_GAME = 'set_game'
 export const CREATE_GAME = 'create_game'
 export const SET_CURSOR = 'set_cursor'
+export const JOIN = 'join'
+export const SET_HOST = 'set_host'
+export const SET_GUEST = 'set_guest'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
@@ -66,6 +69,12 @@ export const store = createStore<State>({
     [SET_CURSOR]: (state, cursor: number) => {
       state.cursor = cursor
     },
+    [SET_HOST]: (state, payload: PlayerState) => {
+      state.players.host = payload
+    },
+    [SET_GUEST]: (state, payload: PlayerState) => {
+      state.players.guest = payload
+    },
   },
   actions: {
     [SIGNIN]: () => firebase.auth().signInAnonymously(),
@@ -76,6 +85,16 @@ export const store = createStore<State>({
       })
       commit(SET_GAME, ref.key)
     },
+    [JOIN]: async ({ state, getters }) => {
+      if (!state.uid) return
+      if ([Role.HOST, Role.GUEST].includes(getters.role)) return
+      console.log(state)
+      if (!state.players.host) {
+        await gameRef?.child(`host/uid`).set(state.uid)
+      } else if (!state.players.guest) {
+        await gameRef?.child(`guest/uid`).set(state.uid)
+      }
+    },
   },
 })
 
@@ -83,9 +102,27 @@ firebase.initializeApp(FIREBASE_CONFIG)
 
 firebase.auth().onAuthStateChanged(user => store.commit(SET_USER, user))
 
+let gameRef: firebase.database.Reference | null = null
+
 store.watch(
   state => state.gid,
   gid => {
     router.replace('/' + gid ?? '')
+    gameRef = firebase.database().ref(`/games/${gid}`)
+
+    gameRef.child('host').on('value', v => store.commit(SET_HOST, v.val()))
+    gameRef.child('guest').on('value', v => store.commit(SET_GUEST, v.val()))
+  }
+)
+
+store.watch(
+  state => state.cursor,
+  async cursor => {
+    const role: Role = store.getters.role
+    if (role === Role.HOST) {
+      await gameRef?.child(`host/cursor`).set(cursor)
+    } else if (role === Role.GUEST) {
+      await gameRef?.child(`guest/cursor`).set(cursor)
+    }
   }
 )

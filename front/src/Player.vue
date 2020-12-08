@@ -1,14 +1,23 @@
 <template>
-  <div class="board" :style="{ gridTemplateColumns: `repeat(${width}, 1fr)` }">
-    <span
-      class="cell"
-      :class="{
-        'is-focused-host': players.host?.cursor === i - 1,
-        'is-focused-guest': players.guest?.cursor === i - 1,
-      }"
-      v-for="i of width * height"
-      :key="i"
-    ></span>
+  <div>
+    <div>
+      <span>{{ gid }}</span
+      ><button v-if="!isPlayer && uid" @click="join">Join</button>
+    </div>
+    <div
+      class="board"
+      :style="{ gridTemplateColumns: `repeat(${width}, 1fr)` }"
+    >
+      <span
+        class="cell"
+        :class="{
+          'is-focused-host': players.host?.cursor === i - 1,
+          'is-focused-guest': players.guest?.cursor === i - 1,
+        }"
+        v-for="i of width * height"
+        :key="i"
+      ></span>
+    </div>
   </div>
 </template>
 
@@ -16,7 +25,7 @@
 import { computed, defineComponent, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
-import { key, Role, SET_CURSOR, SET_GAME, State } from './store'
+import { JOIN, key, Role, SET_CURSOR, SET_GAME, State } from './store'
 import { BOARD_H, BOARD_W } from './config'
 import { off } from 'process'
 
@@ -80,11 +89,16 @@ export default defineComponent({
     onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
     return {
+      uid: computed(() => store.state.uid),
+      gid: computed(() => store.state.gid),
       width: BOARD_W,
       height: BOARD_H,
       cursor,
       isPlayer,
       players: store.state.players,
+      join: () => {
+        store.dispatch(JOIN)
+      },
     }
   },
 })
