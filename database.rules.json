@@ -16,10 +16,10 @@
             ".validate": "auth != null && newData.val() == auth.uid"
           },
           "board": {
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isString()"
           },
           "attack": {
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isString()"
           },
           "cursor": {
             ".validate": "newData.isNumber()"
@@ -34,10 +34,10 @@
             ".validate": "auth != null && newData.val() == auth.uid"
           },
           "board": {
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isString()"
           },
           "attack": {
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isString()"
           },
           "cursor": {
             ".validate": "newData.isNumber()"

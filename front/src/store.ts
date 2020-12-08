@@ -6,6 +6,14 @@ import 'firebase/auth'
 import 'firebase/database'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
+import { isEqual } from './util'
+
+export enum GameStatus {
+  PREPARING,
+  WAITING_HOST,
+  WAITING_GUEST,
+  FINISHED,
+}
 
 export enum Role {
   HOST,
@@ -16,12 +24,15 @@ export enum Role {
 export interface PlayerState {
   uid: string
   cursor: number
+  board: number[]
+  attack: number[]
 }
 
 export interface State {
   uid: string | null
   gid: string | null
   cursor: number
+  board: number[]
   players: {
     host: PlayerState | null
     guest: PlayerState | null
@@ -37,6 +48,7 @@ export const SET_CURSOR = 'set_cursor'
 export const JOIN = 'join'
 export const SET_HOST = 'set_host'
 export const SET_GUEST = 'set_guest'
+export const SET_BOARD = 'set_board'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
@@ -46,6 +58,7 @@ export const store = createStore<State>({
     uid: null,
     gid: null,
     cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
+    board: [],
     players: {
       host: null,
       guest: null,
@@ -58,22 +71,45 @@ export const store = createStore<State>({
         : players.guest?.uid === uid
         ? Role.GUEST
         : Role.AUDIENCE,
+    gameStatus: ({ players }): GameStatus => {
+      if (!players.host?.board || !players.guest?.board) {
+        return GameStatus.PREPARING
+      } else if (
+        isEqual(players.host.board, players.guest.attack) ||
+        isEqual(players.guest.board, players.host.attack)
+      ) {
+        return GameStatus.FINISHED
+      }
+      return GameStatus.FINISHED
+    },
+    myState: ({ players }, { role }): PlayerState | null => {
+      switch (role) {
+        case Role.HOST:
+          return players.host
+        case Role.GUEST:
+          return players.guest
+      }
+      return null
+    },
   },
   mutations: {
     [SET_USER]: (state, payload: firebase.User | null) => {
       state.uid = payload ? payload.uid : null
     },
-    [SET_GAME]: (state, payload: string) => {
+    [SET_GAME]: (state, payload: State['gid']) => {
       state.gid = payload ?? null
     },
-    [SET_CURSOR]: (state, cursor: number) => {
+    [SET_CURSOR]: (state, cursor: State['cursor']) => {
       state.cursor = cursor
     },
-    [SET_HOST]: (state, payload: PlayerState) => {
+    [SET_HOST]: (state, payload: State['players']['host']) => {
       state.players.host = payload
     },
-    [SET_GUEST]: (state, payload: PlayerState) => {
+    [SET_GUEST]: (state, payload: State['players']['guest']) => {
       state.players.guest = payload
+    },
+    [SET_BOARD]: (state, board: State['board']) => {
+      state.board = board
     },
   },
   actions: {
