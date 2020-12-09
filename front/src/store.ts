@@ -124,11 +124,10 @@ export const store = createStore<State>({
     [JOIN]: async ({ state, getters }) => {
       if (!state.uid) return
       if ([Role.HOST, Role.GUEST].includes(getters.role)) return
-      console.log(state)
       if (!state.players.host) {
         await getPlayerRef(Role.HOST)?.child(`uid`).set(state.uid)
       } else if (!state.players.guest) {
-        await getPlayerRef(Role.HOST)?.child(`uid`).set(state.uid)
+        await getPlayerRef(Role.GUEST)?.child(`uid`).set(state.uid)
       }
     },
     [SUBMIT_BOARD]: async ({ state, getters }) => {

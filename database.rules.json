@@ -13,7 +13,7 @@
         "host": {
           ".write": "auth != null && !data.exists() && newData.hasChildren(['uid'])",
           "uid": {
-            ".validate": "auth != null && newData.val() == auth.uid"
+            ".validate": "auth != null && !data.exists() && newData.val() == auth.uid"
           },
           "board": {
             ".validate": "newData.isString()"
@@ -31,7 +31,7 @@
         "guest": {
           ".write": "auth != null && !data.exists() && newData.hasChildren(['uid'])",
           "uid": {
-            ".validate": "auth != null && newData.val() == auth.uid"
+            ".validate": "auth != null && !data.exists() && newData.val() == auth.uid"
           },
           "board": {
             ".validate": "newData.isString()"
