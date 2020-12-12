@@ -25,17 +25,9 @@
 import { computed, defineComponent } from 'vue'
 import { useStore } from 'vuex'
 import { JOIN, key, State, SUBMIT_BOARD } from './store'
-import { BOARD_H, BOARD_W, PIECE_LENGTH } from './config'
+import { PIECE_LENGTH } from './config'
 import Board from './Board.vue'
-import { getBit, isEmpty } from './util'
-
-const pieceLength = (n: number[]) => {
-  let l = 0
-  for (let i = 0; i < BOARD_W * BOARD_H; i++) {
-    l += getBit(n, i) ? 1 : 0
-  }
-  return l
-}
+import { getBit, isEmpty, pieceLength } from './util'
 
 export default defineComponent({
   components: { Board },

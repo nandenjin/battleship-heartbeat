@@ -1,36 +1,68 @@
 <template>
   <div>
+    <div v-if="tokenRole === myRole">You can put piece</div>
+    <div v-else>Waiting other...</div>
     <div class="board-wrap board-wrap--host">
       <board
         :cursors="[{ role: Role.GUEST, cursor: guest.cursor }]"
-        :boards="[{ role: Role.HOST, board: host.board }]"
+        :boards="[
+          {
+            role: Role.HOST,
+            board:
+              myRole === Role.HOST
+                ? host.board
+                : and(host.board, guest.attack || []),
+          },
+        ]"
       />
     </div>
     <div class="board-wrap board-wrap--guest">
       <board
         :cursors="[{ role: Role.HOST, cursor: host.cursor }]"
-        :boards="[{ role: Role.GUEST, board: guest.board }]"
+        :boards="[
+          {
+            role: Role.GUEST,
+            board:
+              myRole === Role.GUEST
+                ? guest.board
+                : and(guest.board, host.attack || []),
+          },
+        ]"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, reactive } from 'vue'
 import { useStore } from 'vuex'
 import Board from './Board.vue'
 import { key, Role, State } from './store'
+import { pieceLength, and } from './util'
 
 export default defineComponent({
   components: { Board },
   setup() {
     const store = useStore<State>(key)
-
-    return {
+    const host = computed(() => store.state.players.host)
+    const guest = computed(() => store.state.players.guest)
+    const state = reactive({
       Role,
-      host: computed(() => store.state.players.host),
-      guest: computed(() => store.state.players.guest),
-    }
+      and,
+      tokenRole: computed(() =>
+        pieceLength(host.value?.attack || []) <=
+        pieceLength(guest.value?.attack || [])
+          ? Role.HOST
+          : Role.GUEST
+      ),
+
+      host,
+      guest,
+      myRole: computed(() => store.getters.role),
+      myState: computed(() => store.getters.myState),
+    })
+
+    return state
   },
 })
 </script>
