@@ -5,12 +5,19 @@
       :boards="[{ role, board: isCompleted ? myState?.board || [] : board }]"
     />
     <button
+      v-if="!isCompleted"
       :disabled="pieceLength(board) !== PIECE_LENGTH"
       @click="submitBoard"
     >
       Submit
     </button>
     <span v-if="isCompleted">Waitiing other player...</span>
+    <span v-else-if="pieceLength(board) < PIECE_LENGTH"
+      >{{ PIECE_LENGTH - pieceLength(board) }} remaining</span
+    >
+    <span v-else-if="pieceLength(board) > PIECE_LENGTH"
+      >Too many selection. The limit is {{ PIECE_LENGTH }}</span
+    >
   </div>
 </template>
 
