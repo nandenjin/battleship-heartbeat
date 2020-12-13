@@ -4,28 +4,28 @@
     <div v-else>Waiting other...</div>
     <div class="board-wrap board-wrap--host">
       <board
-        :cursors="[{ role: Role.GUEST, cursor: guest.cursor }]"
+        :cursors="[{ role: Role.GUEST, cursor: guest?.cursor }]"
         :boards="[
           {
             role: Role.HOST,
             board:
-              myRole === Role.HOST
-                ? host.board
-                : and(host.board, guest.attack || []),
+              myRole === Role.GUEST
+                ? and(host?.board || [], guest?.attack || [])
+                : host?.board,
           },
         ]"
       />
     </div>
     <div class="board-wrap board-wrap--guest">
       <board
-        :cursors="[{ role: Role.HOST, cursor: host.cursor }]"
+        :cursors="[{ role: Role.HOST, cursor: host?.cursor }]"
         :boards="[
           {
             role: Role.GUEST,
             board:
-              myRole === Role.GUEST
-                ? guest.board
-                : and(guest.board, host.attack || []),
+              myRole === Role.HOST
+                ? and(guest?.board || [], host?.attack || [])
+                : guest?.board,
           },
         ]"
       />

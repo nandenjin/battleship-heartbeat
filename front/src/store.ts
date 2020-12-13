@@ -160,8 +160,8 @@ store.watch(
     const convert = (s: Record<string, never>): PlayerState =>
       ({
         ...(s || {}),
-        board: s.board ? ston(s.board) : undefined,
-        attack: s.attack ? ston(s.attack) : undefined,
+        board: s?.board ? ston(s.board) : undefined,
+        attack: s?.attack ? ston(s.attack) : undefined,
       } as PlayerState)
     gameRef
       .child('host')
