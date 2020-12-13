@@ -1,7 +1,13 @@
 <template>
   <div>
-    <div v-if="tokenRole === myRole">You can put piece</div>
-    <div v-else>Waiting other...</div>
+    <div v-if="gameStatus === GameStatus.RUNNING">
+      <div v-if="tokenRole === myRole">You can put piece</div>
+      <div v-else>Waiting other...</div>
+    </div>
+    <div v-else-if="gameStatus === GameStatus.FINISHED">
+      <div v-if="winner === myRole">You win</div>
+      <div v-else>You lose</div>
+    </div>
     <div class="board-wrap board-wrap--host">
       <board
         :cursors="[{ role: Role.GUEST, cursor: guest?.cursor }]"
@@ -9,7 +15,7 @@
           {
             role: Role.HOST,
             board:
-              myRole === Role.GUEST
+              gameStatus === GameStatus.RUNNING && myRole === Role.GUEST
                 ? and(host?.board || [], guest?.attack || [])
                 : host?.board,
           },
@@ -24,7 +30,7 @@
           {
             role: Role.GUEST,
             board:
-              myRole === Role.HOST
+              gameStatus === GameStatus.RUNNING && myRole === Role.HOST
                 ? and(guest?.board || [], host?.attack || [])
                 : guest?.board,
           },
@@ -45,7 +51,7 @@ import {
 } from 'vue'
 import { Store, useStore } from 'vuex'
 import Board from './Board.vue'
-import { key, PlayerState, Role, SET_ATTACK, State } from './store'
+import { GameStatus, key, PlayerState, Role, SET_ATTACK, State } from './store'
 import { pieceLength, and, setBit } from './util'
 
 const handleEnterEvent = (key: string, store: Store<State>) => {
@@ -65,6 +71,7 @@ export default defineComponent({
     const guest = computed(() => store.state.players.guest)
     const state = reactive({
       Role,
+      GameStatus,
       and,
       tokenRole: computed(() =>
         pieceLength(host.value?.attack || []) <=
@@ -77,11 +84,14 @@ export default defineComponent({
       guest,
       myRole: computed(() => store.getters.role),
       myState: computed(() => store.getters.myState),
+      gameStatus: computed(() => store.getters.gameStatus),
+      winner: computed(() => store.getters.winner),
     })
 
     const onKeyDown = ({ key }: KeyboardEvent) => {
       // Permission
       if (![Role.HOST, Role.GUEST].includes(store.getters.role)) return
+      if (state.gameStatus !== GameStatus.RUNNING) return
       if (state.tokenRole !== store.getters.role) return
       handleEnterEvent(key, store)
     }

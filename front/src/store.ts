@@ -6,7 +6,7 @@ import 'firebase/auth'
 import 'firebase/database'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
-import { isEqual, ntos, ston } from './util'
+import { and, isEqual, ntos, ston } from './util'
 
 export enum GameStatus {
   PREPARING,
@@ -74,13 +74,29 @@ export const store = createStore<State>({
         : players.guest?.uid === uid
         ? Role.GUEST
         : Role.AUDIENCE,
-    gameStatus: ({ players }): GameStatus => {
+    winner: ({ players }): Role | null => {
+      if (!players.host?.attack || !players.guest?.attack) return null
+      if (!players.host?.board || !players.guest?.board) return null
+      if (
+        isEqual(
+          players.host.board,
+          and(players.host.board || [], players.guest.attack || [])
+        )
+      )
+        return Role.GUEST
+      if (
+        isEqual(
+          players.guest.board,
+          and(players.guest.board || [], players.host.attack || [])
+        )
+      )
+        return Role.HOST
+      return null
+    },
+    gameStatus: ({ players }, { winner }): GameStatus => {
       if (!players.host?.board || !players.guest?.board) {
         return GameStatus.PREPARING
-      } else if (
-        isEqual(players.host.board, players.guest.attack || []) ||
-        isEqual(players.guest.board, players.host.attack || [])
-      ) {
+      } else if (winner !== null) {
         return GameStatus.FINISHED
       }
       return GameStatus.RUNNING

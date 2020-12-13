@@ -5,7 +5,11 @@
       ><button v-if="!myState && uid" @click="join">Join</button>
     </div>
     <player-preparing v-if="gameStatus === GameStatus.PREPARING" />
-    <player-running v-if="gameStatus === GameStatus.RUNNING" />
+    <player-running-or-finished
+      v-if="
+        gameStatus === GameStatus.RUNNING || gameStatus === GameStatus.FINISHED
+      "
+    />
   </div>
 </template>
 
@@ -23,7 +27,7 @@ import {
   State,
 } from './store'
 import PlayerPreparing from './PlayerPreparing.vue'
-import PlayerRunning from './PlayerRunning.vue'
+import PlayerRunningOrFinished from './PlayerRunningOrFinished.vue'
 import { BOARD_H, BOARD_W } from './config'
 
 /** Cursor change */
@@ -68,7 +72,7 @@ const handleCursorEvent = (key: string, store: Store<State>) => {
 export default defineComponent({
   components: {
     PlayerPreparing,
-    PlayerRunning,
+    PlayerRunningOrFinished,
   },
   setup() {
     const route = useRoute()
