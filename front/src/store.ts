@@ -23,8 +23,8 @@ export enum Role {
 export interface PlayerState {
   uid: string
   cursor: number
-  board?: number[] // ToDo: remove and localize
-  attack?: number[] // ToDo: remove and localize
+  board?: number[]
+  attack?: number[]
 }
 
 export interface State {
@@ -32,6 +32,7 @@ export interface State {
   gid: string | null
   cursor: number
   board: number[]
+  attack: number[]
   players: {
     host: PlayerState | null
     guest: PlayerState | null
@@ -48,6 +49,7 @@ export const JOIN = 'join'
 export const SET_HOST = 'set_host'
 export const SET_GUEST = 'set_guest'
 export const SET_BOARD = 'set_board'
+export const SET_ATTACK = 'set_attack'
 export const SUBMIT_BOARD = 'submit_board'
 
 export const key: InjectionKey<Store<State>> = Symbol()
@@ -59,6 +61,7 @@ export const store = createStore<State>({
     gid: null,
     cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
     board: [],
+    attack: [],
     players: {
       host: null,
       guest: null,
@@ -110,6 +113,9 @@ export const store = createStore<State>({
     },
     [SET_BOARD]: (state, board: State['board']) => {
       state.board = board
+    },
+    [SET_ATTACK]: (state, attack: State['attack']) => {
+      state.attack = attack
     },
   },
   actions: {
@@ -182,6 +188,18 @@ store.watch(
       await gameRef?.child(`host/cursor`).set(cursor)
     } else if (role === Role.GUEST) {
       await gameRef?.child(`guest/cursor`).set(cursor)
+    }
+  }
+)
+
+store.watch(
+  state => state.attack,
+  async attack => {
+    const role: Role = store.getters.role
+    if (role === Role.HOST) {
+      await gameRef?.child(`host/attack`).set(ntos(attack))
+    } else if (role === Role.GUEST) {
+      await gameRef?.child(`guest/attack`).set(ntos(attack))
     }
   }
 )

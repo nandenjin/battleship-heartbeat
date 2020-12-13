@@ -14,6 +14,7 @@
                 : host?.board,
           },
         ]"
+        :attacks="[{ role: Role.GUEST, attack: guest?.attack }]"
       />
     </div>
     <div class="board-wrap board-wrap--guest">
@@ -28,17 +29,33 @@
                 : guest?.board,
           },
         ]"
+        :attacks="[{ role: Role.HOST, attack: host?.attack }]"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, reactive } from 'vue'
-import { useStore } from 'vuex'
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  onUnmounted,
+  reactive,
+} from 'vue'
+import { Store, useStore } from 'vuex'
 import Board from './Board.vue'
-import { key, Role, State } from './store'
-import { pieceLength, and } from './util'
+import { key, PlayerState, Role, SET_ATTACK, State } from './store'
+import { pieceLength, and, setBit } from './util'
+
+const handleEnterEvent = (key: string, store: Store<State>) => {
+  if (key !== ' ') return
+
+  const myState: PlayerState | null = store.getters.myState
+  if (!myState) return
+
+  store.commit(SET_ATTACK, setBit(myState.attack || [], myState.cursor, 1))
+}
 
 export default defineComponent({
   components: { Board },
@@ -61,6 +78,16 @@ export default defineComponent({
       myRole: computed(() => store.getters.role),
       myState: computed(() => store.getters.myState),
     })
+
+    const onKeyDown = ({ key }: KeyboardEvent) => {
+      // Permission
+      if (![Role.HOST, Role.GUEST].includes(store.getters.role)) return
+      if (state.tokenRole !== store.getters.role) return
+      handleEnterEvent(key, store)
+    }
+
+    onMounted(() => window.addEventListener('keydown', onKeyDown))
+    onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
     return state
   },
