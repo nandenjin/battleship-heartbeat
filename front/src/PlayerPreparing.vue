@@ -22,17 +22,46 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
-import { useStore } from 'vuex'
-import { JOIN, key, State, SUBMIT_BOARD } from './store'
+import { computed, defineComponent, onMounted, onUnmounted } from 'vue'
+import { Store, useStore } from 'vuex'
+import {
+  JOIN,
+  key,
+  PlayerState,
+  Role,
+  SET_BOARD,
+  State,
+  SUBMIT_BOARD,
+} from './store'
 import { PIECE_LENGTH } from './config'
 import Board from './Board.vue'
-import { getBit, isEmpty, pieceLength } from './util'
+import { getBit, invBit, isEmpty, pieceLength } from './util'
+
+const handleEnterEvent = (key: string, store: Store<State>) => {
+  const { commit, state, getters } = store
+  const { board, cursor } = state
+  const myState: PlayerState | null = getters.myState
+
+  if (key !== ' ') return
+  if (!myState) return
+
+  if (myState.board && !isEmpty(myState.board)) return
+  commit(SET_BOARD, invBit(board, cursor))
+}
 
 export default defineComponent({
   components: { Board },
   setup() {
     const store = useStore<State>(key)
+
+    const onKeyDown = ({ key }: KeyboardEvent) => {
+      // Permission
+      if (![Role.HOST, Role.GUEST].includes(store.getters.role)) return
+      handleEnterEvent(key, store)
+    }
+
+    onMounted(() => window.addEventListener('keydown', onKeyDown))
+    onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
     return {
       gid: computed(() => store.state.gid),

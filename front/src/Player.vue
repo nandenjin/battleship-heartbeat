@@ -17,16 +17,13 @@ import {
   GameStatus,
   JOIN,
   key,
-  PlayerState,
   Role,
-  SET_BOARD,
   SET_CURSOR,
   SET_GAME,
   State,
 } from './store'
 import PlayerPreparing from './PlayerPreparing.vue'
 import PlayerRunning from './PlayerRunning.vue'
-import { invBit, isEmpty } from './util'
 import { BOARD_H, BOARD_W } from './config'
 
 /** Cursor change */
@@ -68,23 +65,6 @@ const handleCursorEvent = (key: string, store: Store<State>) => {
   commit(SET_CURSOR, newCursor)
 }
 
-const handleEnterEvent = (key: string, store: Store<State>) => {
-  const { commit, state, getters } = store
-  const { board, cursor } = state
-  const gameStatus: GameStatus = getters.gameStatus
-  const myState: PlayerState | null = getters.myState
-
-  if (key !== ' ') return
-  if (!myState) return
-
-  switch (gameStatus) {
-    case GameStatus.PREPARING: {
-      if (myState.board && !isEmpty(myState.board)) return
-      commit(SET_BOARD, invBit(board, cursor))
-    }
-  }
-}
-
 export default defineComponent({
   components: {
     PlayerPreparing,
@@ -108,7 +88,6 @@ export default defineComponent({
       if (![Role.HOST, Role.GUEST].includes(store.getters.role)) return
 
       handleCursorEvent(key, store)
-      handleEnterEvent(key, store)
     }
 
     onMounted(() => window.addEventListener('keydown', onKeyDown))
