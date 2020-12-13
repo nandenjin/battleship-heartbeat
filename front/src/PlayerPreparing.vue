@@ -11,7 +11,7 @@
     >
       Submit
     </button>
-    <span v-if="isCompleted">Waitiing other player...</span>
+    <span v-if="isCompleted">Waiting other player...</span>
     <span v-else-if="pieceLength(board) < PIECE_LENGTH"
       >{{ PIECE_LENGTH - pieceLength(board) }} remaining</span
     >
