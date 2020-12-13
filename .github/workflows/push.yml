@@ -98,5 +98,5 @@ jobs:
         run: yarn run test --coverage
       - uses: codecov/codecov-action@v1
         with:
-          file: ./coverage/clover.xml
+          file: front/coverage/clover.xml
           flags: unittests front
