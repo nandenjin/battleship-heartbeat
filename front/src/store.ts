@@ -157,12 +157,14 @@ store.watch(
     router.replace('/' + gid ?? '')
     gameRef = firebase.database().ref(`/games/${gid}`)
 
-    const convert = (s: Record<string, never>): PlayerState =>
-      ({
-        ...(s || {}),
-        board: s?.board ? ston(s.board) : undefined,
-        attack: s?.attack ? ston(s.attack) : undefined,
-      } as PlayerState)
+    const convert = (s: Record<string, never>): PlayerState | null =>
+      s
+        ? ({
+            ...(s || {}),
+            board: s.board ? ston(s.board) : undefined,
+            attack: s.attack ? ston(s.attack) : undefined,
+          } as PlayerState)
+        : null
     gameRef
       .child('host')
       .on('value', v => store.commit(SET_HOST, convert(v.val())))
