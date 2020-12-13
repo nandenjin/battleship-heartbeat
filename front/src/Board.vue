@@ -115,6 +115,14 @@ export default defineComponent({
     &.piece--guest::after {
       background-color: $color-guest;
     }
+
+    &.attack--host {
+      background-color: lighten($color-host, 40%);
+    }
+
+    &.attack--guest {
+      background-color: lighten($color-guest, 40%);
+    }
   }
 }
 </style>
