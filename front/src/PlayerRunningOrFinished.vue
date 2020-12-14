@@ -1,13 +1,15 @@
 <template>
   <div>
-    <div v-if="gameStatus === GameStatus.RUNNING">
-      <div v-if="tokenRole === myRole">You can put piece</div>
-      <div v-else>Waiting other...</div>
-    </div>
-    <div v-else-if="gameStatus === GameStatus.FINISHED">
-      <div v-if="winner === myRole">You win</div>
-      <div v-else>You lose</div>
-    </div>
+    <template v-if="myState">
+      <div v-if="gameStatus === GameStatus.RUNNING">
+        <div v-if="tokenRole === myRole">You can put piece</div>
+        <div v-else>Waiting other...</div>
+      </div>
+      <div v-else-if="gameStatus === GameStatus.FINISHED">
+        <div v-if="winner === myRole">You win</div>
+        <div v-else>You lose</div>
+      </div>
+    </template>
     <div class="board-wrap board-wrap--host">
       <board
         :cursors="[{ role: Role.GUEST, cursor: guest?.cursor }]"

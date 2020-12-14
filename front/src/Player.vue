@@ -6,17 +6,24 @@
     <template v-if="gameStatus === GameStatus.PREPARING">
       <player-preparing v-if="myState" />
       <div v-else>
-        <span>This game has not started yet.</span>
-        <span v-if="uid"
-          >You can <button @click="join">Join</button> this session as a
-          player.</span
-        >
+        <h2>This game has not started yet.</h2>
+        <template v-if="isGameWaitingJoin">
+          <span v-if="uid"
+            >You can <button @click="join">Join</button> this session as a
+            player.</span
+          >
+          <span v-else
+            >You have to <button @click="signIn">Sign in</button> to join the
+            session.</span
+          >
+          <span
+            >You also can just wait until it starts to watch as an
+            audience.</span
+          >
+        </template>
         <span v-else
-          >You have to <button @click="signIn">Sign in</button> to join the
-          session.</span
-        >
-        <span
-          >You also can just wait until it starts to watch as an audience.</span
+          >Players are now working to be ready. Please wait until it starts.
+          This view will be updated automatically.</span
         >
       </div>
     </template>
@@ -96,8 +103,9 @@ export default defineComponent({
 
     // Load game id by URL
     const loadFromRoute = () => {
-      route.params.id === store.state.gid ||
+      if (route.params.id !== store.state.gid) {
         store.commit(SET_GAME, route.params.id)
+      }
     }
     loadFromRoute()
 
@@ -117,6 +125,9 @@ export default defineComponent({
       GameStatus,
       uid: computed(() => store.state.uid),
       gid: computed(() => store.state.gid),
+      isGameWaitingJoin: computed(
+        () => !(store.state.players.host?.uid && store.state.players.guest?.uid)
+      ),
       gameStatus: computed(() => store.getters.gameStatus),
       myState: computed(() => store.getters.myState),
       join: () => store.dispatch(JOIN),
