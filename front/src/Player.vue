@@ -1,38 +1,32 @@
 <template>
-  <div>
-    <div>
-      <span>{{ gid }}</span>
-    </div>
-    <template v-if="gameStatus === GameStatus.PREPARING">
-      <player-preparing v-if="myState" />
-      <div v-else>
-        <h2>This game has not started yet.</h2>
-        <template v-if="isGameWaitingJoin">
-          <span v-if="uid"
-            >You can <button @click="join">Join</button> this session as a
-            player.</span
-          >
-          <span v-else
-            >You have to <button @click="signIn">Sign in</button> to join the
-            session.</span
-          >
-          <span
-            >You also can just wait until it starts to watch as an
-            audience.</span
-          >
-        </template>
+  <div v-if="gameStatus === GameStatus.PREPARING">
+    <player-preparing v-if="myState" />
+    <div v-else class="splash">
+      <h2>This game has not started yet.</h2>
+      <template v-if="isGameWaitingJoin">
+        <div v-if="uid">
+          <button class="button" @click="join">Join</button>
+        </div>
         <span v-else
-          >Players are now working to be ready. Please wait until it starts.
-          This view will be updated automatically.</span
+          >You have to
+          <button class="button" @click="signIn">Sign in</button> to join the
+          session.</span
         >
-      </div>
-    </template>
-    <player-running-or-finished
-      v-if="
-        gameStatus === GameStatus.RUNNING || gameStatus === GameStatus.FINISHED
-      "
-    />
+        <div class="gray audience-hint">
+          You also can just wait until it starts to watch as an audience.
+        </div>
+      </template>
+      <span v-else
+        >Players are now working to be ready. Please wait until it starts. This
+        view will be updated automatically.</span
+      >
+    </div>
   </div>
+  <player-running-or-finished
+    v-else-if="
+      gameStatus === GameStatus.RUNNING || gameStatus === GameStatus.FINISHED
+    "
+  />
 </template>
 
 <script lang="ts">
@@ -136,3 +130,13 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.splash {
+  text-align: center;
+
+  .audience-hint {
+    margin: 15px auto;
+  }
+}
+</style>

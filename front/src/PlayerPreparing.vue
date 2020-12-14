@@ -1,5 +1,7 @@
 <template>
-  <div>
+  <div class="player-preparing">
+    <h3>Set up your board</h3>
+    <div>Use arrow and space keys to select.</div>
     <board
       :cursors="[{ role, cursor }]"
       :boards="[{ role, board: isCompleted ? myState?.board || [] : board }]"
@@ -7,17 +9,20 @@
     <button
       v-if="!isCompleted"
       :disabled="pieceLength(board) !== PIECE_LENGTH"
+      class="button"
       @click="submitBoard"
     >
       Submit
     </button>
-    <span v-if="isCompleted">Waiting other player...</span>
-    <span v-else-if="pieceLength(board) < PIECE_LENGTH"
-      >{{ PIECE_LENGTH - pieceLength(board) }} remaining</span
-    >
-    <span v-else-if="pieceLength(board) > PIECE_LENGTH"
-      >Too many selection. The limit is {{ PIECE_LENGTH }}</span
-    >
+    <div v-if="isCompleted" class="gray piece-hint waiting">
+      Waiting other player...
+    </div>
+    <div v-else-if="pieceLength(board) < PIECE_LENGTH" class="gray piece-hint">
+      {{ PIECE_LENGTH - pieceLength(board) }} remaining
+    </div>
+    <div v-else-if="pieceLength(board) > PIECE_LENGTH" class="gray piece-hint">
+      Too many selection. The limit is {{ PIECE_LENGTH }}
+    </div>
   </div>
 </template>
 
@@ -84,3 +89,19 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.player-preparing {
+  width: 600px;
+  margin: 30px auto;
+  text-align: center;
+
+  .board {
+    margin: 20px auto;
+  }
+
+  .piece-hint {
+    margin: 10px 0;
+  }
+}
+</style>

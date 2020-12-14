@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="player-running-or-finished">
     <template v-if="myState">
       <div v-if="gameStatus === GameStatus.RUNNING">
         <div v-if="tokenRole === myRole">You can put piece</div>
@@ -10,7 +10,11 @@
         <div v-else>You lose</div>
       </div>
     </template>
-    <div class="board-wrap board-wrap--host">
+    <div
+      class="board-wrap board-wrap--host"
+      :class="{ 'is-active': tokenRole === Role.GUEST }"
+    >
+      <div class="name">{{ (host?.uid || '?').substr(0, 6) }}</div>
       <board
         :cursors="[{ role: Role.GUEST, cursor: guest?.cursor }]"
         :boards="[
@@ -25,7 +29,11 @@
         :attacks="[{ role: Role.GUEST, attack: guest?.attack }]"
       />
     </div>
-    <div class="board-wrap board-wrap--guest">
+    <div
+      class="board-wrap board-wrap--guest"
+      :class="{ 'is-active': tokenRole === Role.HOST }"
+    >
+      <div class="name">{{ (guest?.uid || '?').substr(0, 6) }}</div>
       <board
         :cursors="[{ role: Role.HOST, cursor: host?.cursor }]"
         :boards="[
@@ -109,18 +117,45 @@ export default defineComponent({
 <style lang="scss" scoped>
 @import './style.scss';
 
-.board-wrap {
-  display: inline-block;
-  border: 2px solid #888;
-  margin: 10px;
-  padding: 5px;
+.player-running-or-finished {
+  text-align: center;
 
-  &--host {
-    border-color: $color-host;
-  }
+  .board-wrap {
+    display: inline-block;
+    margin: 10px;
 
-  &--guest {
-    border-color: $color-guest;
+    &:not(.is-active) {
+      opacity: 0.5;
+    }
+
+    .board {
+      border: 2px solid #888;
+      padding: 5px;
+    }
+
+    .name {
+      width: 50px;
+      padding: 3px 5px;
+      font-size: 13px;
+      text-align: left;
+      color: #fff;
+    }
+
+    &--host .board {
+      border-color: $color-host;
+    }
+
+    &--guest .board {
+      border-color: $color-guest;
+    }
+
+    &--host .name {
+      background-color: $color-host;
+    }
+
+    &--guest .name {
+      background-color: $color-guest;
+    }
   }
 }
 </style>

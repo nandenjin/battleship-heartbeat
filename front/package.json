@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.19",
+    "@types/webfontloader": "^1.6.32",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
     "@vue/compiler-sfc": "^3.0.3",
@@ -42,9 +43,11 @@
   },
   "dependencies": {
     "firebase": "^8.1.1",
+    "normalize.css": "^8.0.1",
     "vue": "^3.0.3",
     "vue-router": "^4.0.0-rc.6",
-    "vuex": "^4.0.0-rc.2"
+    "vuex": "^4.0.0-rc.2",
+    "webfontloader": "^1.6.28"
   },
   "husky": {
     "hooks": {
