@@ -76,7 +76,10 @@
         :rader-for="guest?.board"
       />
     </div>
-    <div v-if="gameStatus === GameStatus.RUNNING" class="gray hint-keys">
+    <div
+      v-if="gameStatus === GameStatus.RUNNING && myState"
+      class="gray hint-keys"
+    >
       Use arrow and space keys to operate.
     </div>
   </div>
