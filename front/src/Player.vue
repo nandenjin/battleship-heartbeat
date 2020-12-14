@@ -1,10 +1,25 @@
 <template>
   <div>
     <div>
-      <span>{{ gid }}</span
-      ><button v-if="!myState && uid" @click="join">Join</button>
+      <span>{{ gid }}</span>
     </div>
-    <player-preparing v-if="gameStatus === GameStatus.PREPARING" />
+    <template v-if="gameStatus === GameStatus.PREPARING">
+      <player-preparing v-if="myState" />
+      <div v-else>
+        <span>This game has not started yet.</span>
+        <span v-if="uid"
+          >You can <button @click="join">Join</button> this session as a
+          player.</span
+        >
+        <span v-else
+          >You have to <button @click="signIn">Sign in</button> to join the
+          session.</span
+        >
+        <span
+          >You also can just wait until it starts to watch as an audience.</span
+        >
+      </div>
+    </template>
     <player-running-or-finished
       v-if="
         gameStatus === GameStatus.RUNNING || gameStatus === GameStatus.FINISHED
@@ -24,6 +39,7 @@ import {
   Role,
   SET_CURSOR,
   SET_GAME,
+  SIGNIN,
   State,
 } from './store'
 import PlayerPreparing from './PlayerPreparing.vue'
@@ -103,9 +119,8 @@ export default defineComponent({
       gid: computed(() => store.state.gid),
       gameStatus: computed(() => store.getters.gameStatus),
       myState: computed(() => store.getters.myState),
-      join: () => {
-        store.dispatch(JOIN)
-      },
+      join: () => store.dispatch(JOIN),
+      signIn: () => store.dispatch(SIGNIN),
     }
   },
 })

@@ -4,9 +4,7 @@
       <span>{{ uid }}</span
       ><button @click="signout">Signout</button>
     </div>
-    <div v-else>
-      <button @click="signin">Signin</button>
-    </div>
+    <div v-else>You are not signed in.</div>
     <router-view />
   </div>
 </template>
