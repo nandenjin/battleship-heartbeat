@@ -8,21 +8,21 @@
         ".read": true,
         ".write": "auth != null && !data.exists() && newData.hasChildren(['createdBy'])",
         "createdBy": {
-          ".validate": "newData.val() == auth.uid"
+          ".validate": "!data.exists() && newData.val() == auth.uid"
         },
         "host": {
           ".write": "auth != null && !data.exists() && newData.hasChildren(['uid'])",
           "uid": {
-            ".validate": "auth != null && !data.exists() && newData.val() == auth.uid"
+            ".validate": "!data.exists() && newData.val() == auth.uid"
           },
           "board": {
-            ".validate": "newData.isString()"
+            ".validate": "newData.isString() && data.parent().child('uid').val() == auth.uid"
           },
           "attack": {
-            ".validate": "newData.isString()"
+            ".validate": "newData.isString() && data.parent().child('uid').val() == auth.uid"
           },
           "cursor": {
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isNumber() && data.parent().child('uid').val() == auth.uid"
           },
           "$other": {
             ".validate": false
@@ -31,16 +31,16 @@
         "guest": {
           ".write": "auth != null && !data.exists() && newData.hasChildren(['uid'])",
           "uid": {
-            ".validate": "auth != null && !data.exists() && newData.val() == auth.uid"
+            ".validate": "!data.exists() && newData.val() == auth.uid"
           },
           "board": {
-            ".validate": "newData.isString()"
+            ".validate": "newData.isString() && data.parent().child('uid').val() == auth.uid"
           },
           "attack": {
-            ".validate": "newData.isString()"
+            ".validate": "newData.isString() && data.parent().child('uid').val() == auth.uid"
           },
           "cursor": {
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isNumber() && data.parent().child('uid').val() == auth.uid"
           },
           "$other": {
             ".validate": false
