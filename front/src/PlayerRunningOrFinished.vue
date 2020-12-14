@@ -1,20 +1,34 @@
 <template>
   <div class="player-running-or-finished">
-    <template v-if="myState">
-      <div v-if="gameStatus === GameStatus.RUNNING">
+    <div v-if="gameStatus === GameStatus.RUNNING">
+      <h3>Game running</h3>
+      <template v-if="myState">
         <div v-if="tokenRole === myRole">You can put piece</div>
         <div v-else>Waiting other...</div>
-      </div>
-      <div v-else-if="gameStatus === GameStatus.FINISHED">
+      </template>
+    </div>
+    <div v-else-if="gameStatus === GameStatus.FINISHED">
+      <h3>Game finished</h3>
+      <template v-if="myState">
         <div v-if="winner === myRole">You win</div>
         <div v-else>You lose</div>
-      </div>
-    </template>
+      </template>
+    </div>
     <div
       class="board-wrap board-wrap--host"
-      :class="{ 'is-active': tokenRole === Role.GUEST }"
+      :class="{
+        'is-active':
+          tokenRole === Role.GUEST || gameStatus === GameStatus.FINISHED,
+      }"
     >
-      <div class="name">{{ (host?.uid || '?').substr(0, 6) }}</div>
+      <div class="badge-container">
+        <div class="badge badge--name">
+          {{ (host?.uid || '?').substr(0, 6) }}
+        </div>
+        <div v-if="winner === Role.HOST" class="badge badge--winner">
+          Winner
+        </div>
+      </div>
       <board
         :cursors="[{ role: Role.GUEST, cursor: guest?.cursor }]"
         :boards="[
@@ -27,13 +41,25 @@
           },
         ]"
         :attacks="[{ role: Role.GUEST, attack: guest?.attack }]"
+        :rader-as="guest?.attack"
+        :rader-for="host?.board"
       />
     </div>
     <div
       class="board-wrap board-wrap--guest"
-      :class="{ 'is-active': tokenRole === Role.HOST }"
+      :class="{
+        'is-active':
+          tokenRole === Role.HOST || gameStatus === GameStatus.FINISHED,
+      }"
     >
-      <div class="name">{{ (guest?.uid || '?').substr(0, 6) }}</div>
+      <div class="badge-container">
+        <div class="badge badge--name">
+          {{ (guest?.uid || '?').substr(0, 6) }}
+        </div>
+        <div v-if="winner === Role.GUEST" class="badge badge--winner">
+          Winner
+        </div>
+      </div>
       <board
         :cursors="[{ role: Role.HOST, cursor: host?.cursor }]"
         :boards="[
@@ -46,6 +72,8 @@
           },
         ]"
         :attacks="[{ role: Role.HOST, attack: host?.attack }]"
+        :rader-as="host?.attack"
+        :rader-for="guest?.board"
       />
     </div>
   </div>
@@ -133,12 +161,21 @@ export default defineComponent({
       padding: 5px;
     }
 
-    .name {
-      width: 50px;
-      padding: 3px 5px;
-      font-size: 13px;
+    .badge-container {
       text-align: left;
-      color: #fff;
+
+      .badge {
+        display: inline-block;
+        width: 50px;
+        padding: 3px 5px;
+        font-size: 13px;
+        text-align: left;
+        color: #fff;
+
+        &--winner {
+          background-color: #f80;
+        }
+      }
     }
 
     &--host .board {
@@ -149,11 +186,11 @@ export default defineComponent({
       border-color: $color-guest;
     }
 
-    &--host .name {
+    &--host .badge--name {
       background-color: $color-host;
     }
 
-    &--guest .name {
+    &--guest .badge--name {
       background-color: $color-guest;
     }
   }

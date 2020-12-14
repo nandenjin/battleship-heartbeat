@@ -12,7 +12,10 @@
         'attack--host': getBit(hostAttack, i - 1),
         'attack--guest': getBit(guestAttack, i - 1),
       }"
-    />
+      ><span class="rader">{{
+        rader[i - 1] > 0 ? Math.ceil(rader[i - 1]) : ''
+      }}</span></span
+    >
   </div>
 </template>
 
@@ -34,6 +37,14 @@ export default defineComponent({
     },
     attacks: {
       type: Array as PropType<{ role: Role; attack: number[] }[]>,
+      default: [],
+    },
+    raderFor: {
+      type: Array as PropType<number[]>,
+      default: [],
+    },
+    raderAs: {
+      type: Array as PropType<number[]>,
       default: [],
     },
   },
@@ -61,6 +72,34 @@ export default defineComponent({
         () =>
           props.attacks?.find(({ role }) => role === Role.GUEST)?.attack || []
       ),
+      rader: computed(() => {
+        const board = props.raderFor
+        const attack = props.raderAs
+
+        const rader = Array(BOARD_W * BOARD_H).fill(-1)
+
+        if (board && attack) {
+          for (let i = 0; i < BOARD_W * BOARD_H; i++) {
+            let lmin = Infinity
+            if (getBit(attack, i)) {
+              for (let j = 0; j < BOARD_W * BOARD_H; j++) {
+                if (getBit(board, j)) {
+                  const ix = i % BOARD_W
+                  const iy = Math.floor(i / BOARD_W)
+                  const jx = j % BOARD_W
+                  const jy = Math.floor(j / BOARD_W)
+                  const l = Math.sqrt(
+                    Math.pow(ix - jx, 2) + Math.pow(iy - jy, 2)
+                  )
+                  lmin = Math.min(lmin, l)
+                }
+              }
+            }
+            rader[i] = lmin < Infinity ? lmin : -1
+          }
+        }
+        return rader
+      }),
       getBit,
     }
   },
@@ -122,6 +161,20 @@ export default defineComponent({
 
     &.attack--guest {
       background-color: lighten($color-guest, 40%);
+    }
+
+    .rader {
+      display: inline-block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      width: 15px;
+      height: 15px;
+      text-align: center;
+      line-height: 15px;
     }
   }
 }
