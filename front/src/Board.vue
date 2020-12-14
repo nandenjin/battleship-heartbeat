@@ -88,9 +88,7 @@ export default defineComponent({
                   const iy = Math.floor(i / BOARD_W)
                   const jx = j % BOARD_W
                   const jy = Math.floor(j / BOARD_W)
-                  const l = Math.sqrt(
-                    Math.pow(ix - jx, 2) + Math.pow(iy - jy, 2)
-                  )
+                  const l = Math.abs(ix - jx) + Math.abs(iy - jy)
                   lmin = Math.min(lmin, l)
                 }
               }
