@@ -173,34 +173,32 @@ const getPlayerRef = (role: Role): firebase.database.Reference | null => {
   return null
 }
 
-store.watch(
-  state => state.gid,
-  gid => {
-    router.replace('/' + gid ?? '')
-    if (gid) {
-      gameRef = firebase.database().ref(`/games/${gid}`)
+store.subscribe(({ type }, { gid }) => {
+  if (type !== SET_GAME) return
+  router.replace('/' + gid ?? '')
+  if (gid) {
+    gameRef = firebase.database().ref(`/games/${gid}`)
 
-      const convert = (s: Record<string, never>): PlayerState | null =>
-        s
-          ? ({
-              ...(s || {}),
-              board: s.board ? ston(s.board) : undefined,
-              attack: s.attack ? ston(s.attack) : undefined,
-            } as PlayerState)
-          : null
-      gameRef
-        .child('host')
-        .on('value', v => store.commit(SET_HOST, convert(v.val())))
-      gameRef
-        .child('guest')
-        .on('value', v => store.commit(SET_GUEST, convert(v.val())))
-    } else {
-      gameRef = null
-      store.commit(SET_HOST, null)
-      store.commit(SET_GUEST, null)
-    }
+    const convert = (s: Record<string, never>): PlayerState | null =>
+      s
+        ? ({
+            ...(s || {}),
+            board: s.board ? ston(s.board) : undefined,
+            attack: s.attack ? ston(s.attack) : undefined,
+          } as PlayerState)
+        : null
+    gameRef
+      .child('host')
+      .on('value', v => store.commit(SET_HOST, convert(v.val())))
+    gameRef
+      .child('guest')
+      .on('value', v => store.commit(SET_GUEST, convert(v.val())))
+  } else {
+    gameRef = null
+    store.commit(SET_HOST, null)
+    store.commit(SET_GUEST, null)
   }
-)
+})
 
 store.watch(
   state => state.cursor,
