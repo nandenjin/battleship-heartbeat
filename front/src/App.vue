@@ -62,7 +62,7 @@ export default defineComponent({
     }
 
     &--guest {
-      background-color: $color-host;
+      background-color: $color-guest;
     }
   }
 }
