@@ -76,6 +76,9 @@
         :rader-for="guest?.board"
       />
     </div>
+    <div v-if="gameStatus === GameStatus.RUNNING" class="gray hint-keys">
+      Use arrow and space keys to operate.
+    </div>
   </div>
 </template>
 
@@ -193,6 +196,10 @@ export default defineComponent({
     &--guest .badge--name {
       background-color: $color-guest;
     }
+  }
+
+  .hint-keys {
+    margin: 15px 0;
   }
 }
 </style>
