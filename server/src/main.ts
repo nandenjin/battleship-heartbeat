@@ -5,6 +5,9 @@ import express from 'express'
 import consola from 'consola'
 import { Role } from './types'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { Server: OscServer } = require('node-osc')
+
 const app = express()
 const server = createServer(app)
 
@@ -28,13 +31,34 @@ const game: {
   guest: null,
 }
 
-const sockets: Socket[] = []
+interface Client {
+  id: string
+  uid: string | null
+  socket: Socket
+}
+const clients: Client[] = []
 
-io.on('connection', socket => {
-  consola.log('User connected')
-  sockets.push(socket)
+io.on('connection', (socket: Socket) => {
+  consola.log('Client connected')
+  const client: Client = {
+    id: socket.id,
+    uid: null,
+    socket,
+  }
+  clients.push(client)
 
-  socket.on('setRole', ({ uid, role }: { uid: string; role: Role }) => {
+  socket.on('setUid', ({ uid }) => {
+    client.uid = uid
+    consola.log(`[setUid] ${uid}`)
+  })
+
+  socket.on('setRole', ({ role }: { uid: string; role: Role }) => {
+    const { uid } = client
+    if (!uid) {
+      consola.warn('Client requested to set role but uid is not set.')
+      return
+    }
+
     consola.log(`[setRole] ${uid} = ${Role[role]}`)
     setByRole(role, { uid })
     broadcastState()
@@ -58,6 +82,11 @@ io.on('connection', socket => {
     broadcastState()
   })
 
+  socket.on('disconnect', () => {
+    clients.splice(clients.indexOf(client), 1)
+    consola.log('Client disconnected')
+  })
+
   tellState(socket)
 })
 
@@ -74,8 +103,69 @@ const tellState = (socket: Socket) => {
   socket.emit('guest', game.guest)
 }
 
-const broadcastState = () => sockets.forEach(socket => tellState(socket))
+const broadcastState = () => clients.forEach(({ socket }) => tellState(socket))
 
 server.listen(3000, () => {
   consola.info('Ready')
 })
+
+const osc = new OscServer(8888, '0.0.0.0')
+const controllers: string[] = []
+osc.on(
+  'message',
+  (
+    [path, ...args]: [string, ...unknown[]],
+    { address }: { address: string }
+  ) => {
+    if (!controllers.includes(address)) {
+      controllers.push(address)
+      consola.log('Controller connected (new): ' + address)
+    }
+    switch (path) {
+      case '/opr': {
+        const index = controllers.indexOf(address)
+        if (index > 1) {
+          consola.warn(
+            'Operation ignored because too many controllers are connected.'
+          )
+          return
+        }
+
+        let player: ServerPlayerState | null = null
+        if (index === 0) {
+          player = game.host
+        } else if (index === 1) {
+          player = game.guest
+        }
+
+        if (!player) {
+          consola.warn(
+            'Operation ignored bacause no role is set yet to the client.'
+          )
+          return
+        }
+
+        const { uid } = player
+
+        if (!uid) {
+          consola.warn('Operation ignored bacause uid is missing with client.')
+          return
+        }
+
+        const client = clients.find(({ uid: cuid }) => cuid === uid)
+
+        if (!client) {
+          consola.warn(
+            'Operation ignored bacause no clients is matched to uid.'
+          )
+          return
+        }
+
+        consola.log(`[Opr] ${args[0]} : ${address}`)
+        client.socket.emit('opr', args[0])
+
+        break
+      }
+    }
+  }
+)

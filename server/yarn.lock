@@ -1562,6 +1562,11 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
+binpack@~0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/binpack/-/binpack-0.1.0.tgz#bd3d0974c3f2a0446e17df4f60b55a72a205a97e"
+  integrity sha1-vT0JdMPyoERuF99PYLVacqIFqX4=
+
 bluebird@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
@@ -4488,6 +4493,11 @@ json5@^1.0.1:
   dependencies:
     minimist "^1.2.0"
 
+jspack@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/jspack/-/jspack-0.0.4.tgz#32dd35c7fdcb3e3456c18fbb7ef9ed0bc6238177"
+  integrity sha1-Mt01x/3LPjRWwY+7fvntC8YjgXc=
+
 jsprim@^1.2.2:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/jsprim/-/jsprim-1.4.1.tgz#313e66bc1e5cc06e438bc1b7499c2e5c56acb6a2"
@@ -4991,6 +5001,14 @@ node-notifier@^8.0.0:
     uuid "^8.3.0"
     which "^2.0.2"
 
+node-osc@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/node-osc/-/node-osc-5.2.2.tgz#4aac48bdd460262086b09998c1c0c6c27c658baf"
+  integrity sha512-8MtZyZqTZINnk+NOQZtZxl5MwOHUqc2bVapeRcwzxByB1WIHg7gOtJHbp0BElsfkrfbgeDbSSIs/JxRJYwrZ6g==
+  dependencies:
+    jspack "0.0.4"
+    osc-min "^1.1.1"
+
 node-releases@^1.1.66:
   version "1.1.67"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-1.1.67.tgz#28ebfcccd0baa6aad8e8d4d8fe4cbc49ae239c12"
@@ -5192,6 +5210,13 @@ original@^1.0.0:
   integrity sha512-hyBVl6iqqUOJ8FqRe+l/gS8H+kKYjrEndd5Pm1MfBtsEKA038HkkdbAl/72EAXGyonD/PFsvmVG+EvcIpliMBg==
   dependencies:
     url-parse "^1.4.3"
+
+osc-min@^1.1.1:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/osc-min/-/osc-min-1.1.2.tgz#3dcaff10f804c39b7080cf4c10fd7a4103cd9037"
+  integrity sha512-8DbiO8ME85R75stgNVCZtHxB9MNBBNcyy+isNBXrsFeinXGjwNAauvKVmGlfRas5VJWC/mhzIx7spR2gFvWxvg==
+  dependencies:
+    binpack "~0"
 
 p-each-series@^2.1.0:
   version "2.2.0"

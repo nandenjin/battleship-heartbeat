@@ -48,10 +48,12 @@ export const SUBMIT_BOARD = 'submit_board'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
+const uid = localStorage.uid || (localStorage.uid = uuid())
+
 export const store = createStore<State>({
   strict: true,
   state: () => ({
-    uid: localStorage.uid || (localStorage.uid = uuid()),
+    uid,
     gid: null,
     cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
     board: [],
@@ -149,6 +151,8 @@ export const store = createStore<State>({
 
 const socket = io('ws://localhost:3000')
 
+socket.on('connect', () => socket.emit('setUid', { uid }))
+
 store.subscribe(({ type }, { gid }) => {
   if (type !== SET_GAME) return
   router.replace('/' + gid ?? '')
@@ -188,3 +192,26 @@ store.watch(
     socket.emit('setAttack', { role, attack: ntos(attack) })
   }
 )
+
+socket.on('opr', (n: number) => {
+  let key = ''
+  switch (n) {
+    case 1:
+      key = 'ArrowUp'
+      break
+    case 2:
+      key = 'ArrowDown'
+      break
+    case 4:
+      key = 'ArrowLeft'
+      break
+    case 8:
+      key = 'ArrowRight'
+      break
+    case 16:
+      key = ' '
+      break
+  }
+  const event = new KeyboardEvent('keydown', { key })
+  window.dispatchEvent(event)
+})

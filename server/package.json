@@ -48,6 +48,7 @@
     "@types/express": "^4.17.11",
     "consola": "^2.15.0",
     "express": "^4.17.1",
+    "node-osc": "^5.2.2",
     "normalize.css": "^8.0.1",
     "socket.io": "^3.0.5",
     "socket.io-client": "^3.0.5",
