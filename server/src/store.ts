@@ -51,7 +51,7 @@ export const key: InjectionKey<Store<State>> = Symbol()
 export const store = createStore<State>({
   strict: true,
   state: () => ({
-    uid: localStorage.uid || uuid(),
+    uid: localStorage.uid || (localStorage.uid = uuid()),
     gid: null,
     cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
     board: [],
