@@ -9,7 +9,7 @@
             'badge--guest': role === Role.GUEST,
           }"
           >{{ uid.substr(0, 6) }}</span
-        ><button @click="signout">Signout</button>
+        >
       </div>
       <div v-else>You are not signed in.</div>
     </div>
