@@ -1,9 +1,8 @@
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
 
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/database'
+import { io } from 'socket.io-client'
+import { v4 as uuid } from 'uuid'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
 import { and, isEqual, ntos, ston } from './util'
@@ -57,7 +56,7 @@ export const key: InjectionKey<Store<State>> = Symbol()
 export const store = createStore<State>({
   strict: true,
   state: () => ({
-    uid: null,
+    uid: localStorage.uid || uuid(),
     gid: null,
     cursor: Math.floor(BOARD_W * BOARD_H * Math.random()),
     board: [],
@@ -112,9 +111,6 @@ export const store = createStore<State>({
     },
   },
   mutations: {
-    [SET_USER]: (state, payload: firebase.User | null) => {
-      state.uid = payload ? payload.uid : null
-    },
     [SET_GAME]: (state, payload: State['gid']) => {
       state.gid = payload ?? null
     },
@@ -135,50 +131,33 @@ export const store = createStore<State>({
     },
   },
   actions: {
-    [SIGNIN]: () => firebase.auth().signInAnonymously(),
-    [SIGNOUT]: () => firebase.auth().signOut(),
-    [CREATE_GAME]: async ({ state, commit }) => {
-      const ref = await firebase.database().ref('games').push({
-        createdBy: state.uid,
-      })
-      commit(SET_GAME, ref.key)
+    [CREATE_GAME]: async ({ commit }) => {
+      commit(SET_GAME, 'g')
     },
     [JOIN]: async ({ state, getters }) => {
       if (!state.uid) return
       if ([Role.HOST, Role.GUEST].includes(getters.role)) return
       if (!state.players.host) {
-        await getPlayerRef(Role.HOST)?.child(`uid`).set(state.uid)
+        socket.emit('setRole', { uid: state.uid, role: Role.HOST })
       } else if (!state.players.guest) {
-        await getPlayerRef(Role.GUEST)?.child(`uid`).set(state.uid)
+        socket.emit('setRole', { uid: state.uid, role: Role.GUEST })
       }
     },
     [SUBMIT_BOARD]: async ({ state, getters }) => {
-      await getPlayerRef(getters.role)?.child(`board`).set(ntos(state.board))
+      socket.emit('submitBoard', {
+        role: getters.role,
+        board: ntos(state.board),
+      })
     },
   },
 })
 
-firebase.initializeApp(FIREBASE_CONFIG)
-
-firebase.auth().onAuthStateChanged(user => store.commit(SET_USER, user))
-
-let gameRef: firebase.database.Reference | null = null
-const getPlayerRef = (role: Role): firebase.database.Reference | null => {
-  switch (role) {
-    case Role.HOST:
-      return gameRef?.child(`host`) || null
-    case Role.GUEST:
-      return gameRef?.child(`guest`) || null
-  }
-  return null
-}
+const socket = io('ws://localhost:3000')
 
 store.subscribe(({ type }, { gid }) => {
   if (type !== SET_GAME) return
   router.replace('/' + gid ?? '')
   if (gid) {
-    gameRef = firebase.database().ref(`/games/${gid}`)
-
     const convert = (s: Record<string, never>): PlayerState | null =>
       s
         ? ({
@@ -187,14 +166,13 @@ store.subscribe(({ type }, { gid }) => {
             attack: s.attack ? ston(s.attack) : undefined,
           } as PlayerState)
         : null
-    gameRef
-      .child('host')
-      .on('value', v => store.commit(SET_HOST, convert(v.val())))
-    gameRef
-      .child('guest')
-      .on('value', v => store.commit(SET_GUEST, convert(v.val())))
+    socket.on('host', (data: Record<string, never>) =>
+      store.commit('SET_HOST', convert(data))
+    )
+    socket.on('guest', (data: Record<string, never>) =>
+      store.commit('SET_GUEST', convert(data))
+    )
   } else {
-    gameRef = null
     store.commit(SET_HOST, null)
     store.commit(SET_GUEST, null)
   }
@@ -204,11 +182,7 @@ store.watch(
   state => state.cursor,
   async cursor => {
     const role: Role = store.getters.role
-    if (role === Role.HOST) {
-      await gameRef?.child(`host/cursor`).set(cursor)
-    } else if (role === Role.GUEST) {
-      await gameRef?.child(`guest/cursor`).set(cursor)
-    }
+    socket.emit('setCursor', { role, cursor })
   }
 )
 
@@ -216,10 +190,6 @@ store.watch(
   state => state.attack,
   async attack => {
     const role: Role = store.getters.role
-    if (role === Role.HOST) {
-      await gameRef?.child(`host/attack`).set(ntos(attack))
-    } else if (role === Role.GUEST) {
-      await gameRef?.child(`guest/attack`).set(ntos(attack))
-    }
+    socket.emit('setAttack', { role, attack: ntos(attack) })
   }
 )
