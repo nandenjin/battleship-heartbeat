@@ -21,7 +21,8 @@
 import { computed, defineComponent } from 'vue'
 import { useStore } from 'vuex'
 import { RouterView } from 'vue-router'
-import { key, SIGNIN, SIGNOUT, State, Role } from './store'
+import { key, SIGNIN, SIGNOUT, State } from './store'
+import { Role } from './types'
 
 export default defineComponent({
   components: {

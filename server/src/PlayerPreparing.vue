@@ -29,15 +29,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, onUnmounted } from 'vue'
 import { Store, useStore } from 'vuex'
-import {
-  JOIN,
-  key,
-  PlayerState,
-  Role,
-  SET_BOARD,
-  State,
-  SUBMIT_BOARD,
-} from './store'
+import { JOIN, key, PlayerState, SET_BOARD, State, SUBMIT_BOARD } from './store'
+import { Role } from './types'
 import { PIECE_LENGTH } from './config'
 import Board from './Board.vue'
 import { getBit, invBit, isEmpty, pieceLength } from './util'

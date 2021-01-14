@@ -95,7 +95,8 @@ import {
 } from 'vue'
 import { Store, useStore } from 'vuex'
 import Board from './Board.vue'
-import { GameStatus, key, PlayerState, Role, SET_ATTACK, State } from './store'
+import { GameStatus, key, PlayerState, SET_ATTACK, State } from './store'
+import { Role } from './types'
 import { pieceLength, and, setBit } from './util'
 
 const handleEnterEvent = (key: string, store: Store<State>) => {

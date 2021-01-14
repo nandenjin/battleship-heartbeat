@@ -6,17 +6,12 @@ import { v4 as uuid } from 'uuid'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
 import { and, isEqual, ntos, ston } from './util'
+import { Role } from './types'
 
 export enum GameStatus {
   PREPARING,
   RUNNING,
   FINISHED,
-}
-
-export enum Role {
-  HOST,
-  GUEST,
-  AUDIENCE,
 }
 
 export interface PlayerState {
@@ -132,7 +127,7 @@ export const store = createStore<State>({
   },
   actions: {
     [CREATE_GAME]: async ({ commit }) => {
-      commit(SET_GAME, 'g')
+      commit(SET_GAME, 'g') // Return static value temporarily
     },
     [JOIN]: async ({ state, getters }) => {
       if (!state.uid) return
@@ -167,10 +162,10 @@ store.subscribe(({ type }, { gid }) => {
           } as PlayerState)
         : null
     socket.on('host', (data: Record<string, never>) =>
-      store.commit('SET_HOST', convert(data))
+      store.commit(SET_HOST, convert(data))
     )
     socket.on('guest', (data: Record<string, never>) =>
-      store.commit('SET_GUEST', convert(data))
+      store.commit(SET_GUEST, convert(data))
     )
   } else {
     store.commit(SET_HOST, null)

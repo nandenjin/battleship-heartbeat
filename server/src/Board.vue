@@ -22,7 +22,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import { BOARD_H, BOARD_W } from './config'
-import { Role } from './store'
+import { Role } from './types'
 import { getBit } from './util'
 
 export default defineComponent({

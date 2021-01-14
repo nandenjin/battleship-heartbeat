@@ -37,12 +37,12 @@ import {
   GameStatus,
   JOIN,
   key,
-  Role,
   SET_CURSOR,
   SET_GAME,
   SIGNIN,
   State,
 } from './store'
+import { Role } from './types'
 import PlayerPreparing from './PlayerPreparing.vue'
 import PlayerRunningOrFinished from './PlayerRunningOrFinished.vue'
 import { BOARD_H, BOARD_W } from './config'
