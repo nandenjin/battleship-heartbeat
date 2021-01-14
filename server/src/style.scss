@@ -1,0 +1,53 @@
+$color-host: #f08;
+$color-guest: #08f;
+
+html,
+body {
+  font-family: Roboto;
+  font-weight: 300;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 300;
+}
+
+.button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-block;
+  margin: 0 10px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-weight: 500;
+  border: none;
+  background-color: #f80;
+
+  &:hover {
+    background-color: lighten(#f80, 10%);
+  }
+
+  &:disabled {
+    filter: saturate(0%);
+  }
+}
+
+.gray {
+  color: #888;
+  font-size: 14px;
+}
+
+.waiting {
+  animation: waiting 1s ease 0s alternate infinite;
+
+  @keyframes waiting {
+    0% {
+      opacity: 0.5;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+}
