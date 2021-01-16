@@ -34,6 +34,10 @@ module.exports = {
         test: /\.vue$/,
         loader: 'vue-loader',
       },
+      {
+        test: /\.woff2?$/,
+        loader: 'file-loader',
+      },
     ],
   },
   resolve: {
