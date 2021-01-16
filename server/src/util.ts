@@ -3,7 +3,7 @@ import { BOARD_W } from './config'
 export const normalize = (n: number[]): number[] => {
   let f = false
   for (let i = n.length - 1; i >= 0; i--) {
-    if (!n[i] || n[i] <= 0) {
+    if (!n[i]) {
       if (f) {
         n[i] = 0
       } else {
