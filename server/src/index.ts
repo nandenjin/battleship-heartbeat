@@ -8,8 +8,7 @@ import './style.scss'
 
 WebFont.load({
   google: {
-    api: 'https://fonts.googleapis.com/css2',
-    families: ['Roboto:wght@300;500&display=swap'],
+    families: ['Material Icons', 'Roboto:wght@300;500'],
   },
 })
 

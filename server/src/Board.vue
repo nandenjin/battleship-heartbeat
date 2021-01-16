@@ -1,21 +1,30 @@
 <template>
   <div class="board" :style="{ gridTemplateColumns: `repeat(${width}, 1fr)` }">
-    <span
-      v-for="i of width * height"
-      :key="i"
-      class="cell"
-      :class="{
-        'is-focused--host': hostCursor === i - 1,
-        'is-focused--guest': guestCursor === i - 1,
-        'piece--host': getBit(hostBoard, i - 1),
-        'piece--guest': getBit(guestBoard, i - 1),
-        'attack--host': getBit(hostAttack, i - 1),
-        'attack--guest': getBit(guestAttack, i - 1),
-      }"
-      ><span class="rader">{{
-        rader[i - 1] > 0 ? Math.ceil(rader[i - 1]) : ''
-      }}</span></span
-    >
+    <span v-for="i of width * height" :key="i" class="cell">
+      <span
+        class="cursor"
+        :class="{
+          'cursor--host': hostCursor === i - 1,
+          'cursor--guest': guestCursor === i - 1,
+        }"
+      ></span>
+      <span class="rader rader--as-host">{{
+        raderAsHost[i - 1] > 0 ? Math.ceil(raderAsHost[i - 1]) : ''
+      }}</span>
+      <span class="rader rader--as-guest">{{
+        raderAsGuest[i - 1] > 0 ? Math.ceil(raderAsGuest[i - 1]) : ''
+      }}</span>
+      <span
+        class="piece"
+        :class="{
+          'piece--host': getBit(hostBoard, i - 1),
+          'piece--guest': getBit(guestBoard, i - 1),
+          'piece--host-attacked': getBit(and(hostBoard, guestAttack), i - 1),
+          'piece--guest-attacked': getBit(and(guestBoard, hostAttack), i - 1),
+        }"
+      >
+      </span>
+    </span>
   </div>
 </template>
 
@@ -23,7 +32,31 @@
 import { computed, defineComponent, PropType } from 'vue'
 import { BOARD_H, BOARD_W } from './config'
 import { Role } from './types'
-import { getBit } from './util'
+import { getBit, and } from './util'
+
+const computeRader = (board: number[], attack: number[]): number[] => {
+  const rader = Array(BOARD_W * BOARD_H).fill(-1)
+
+  if (board && attack) {
+    for (let i = 0; i < BOARD_W * BOARD_H; i++) {
+      let lmin = Infinity
+      if (getBit(attack, i)) {
+        for (let j = 0; j < BOARD_W * BOARD_H; j++) {
+          if (getBit(board, j)) {
+            const ix = i % BOARD_W
+            const iy = Math.floor(i / BOARD_W)
+            const jx = j % BOARD_W
+            const jy = Math.floor(j / BOARD_W)
+            const l = Math.abs(ix - jx) + Math.abs(iy - jy)
+            lmin = Math.min(lmin, l)
+          }
+        }
+      }
+      rader[i] = lmin < Infinity ? lmin : -1
+    }
+  }
+  return rader
+}
 
 export default defineComponent({
   props: {
@@ -39,66 +72,54 @@ export default defineComponent({
       type: Array as PropType<{ role: Role; attack: number[] }[]>,
       default: [],
     },
-    raderFor: {
-      type: Array as PropType<number[]>,
-      default: [],
-    },
-    raderAs: {
-      type: Array as PropType<number[]>,
+    raders: {
+      type: Array as PropType<
+        { asRole: Role; board: number[]; attack: number[] }[]
+      >,
       default: [],
     },
   },
   setup(props) {
+    const hostCursor = computed(
+      () => props.cursors?.find(({ role }) => role === Role.HOST)?.cursor
+    )
+    const guestCursor = computed(
+      () => props.cursors?.find(({ role }) => role === Role.GUEST)?.cursor
+    )
+    const hostBoard = computed(
+      () => props.boards?.find(({ role }) => role === Role.HOST)?.board || []
+    )
+    const guestBoard = computed(
+      () => props.boards?.find(({ role }) => role === Role.GUEST)?.board || []
+    )
+    const hostAttack = computed(
+      () => props.attacks?.find(({ role }) => role === Role.HOST)?.attack || []
+    )
+    const guestAttack = computed(
+      () => props.attacks?.find(({ role }) => role === Role.GUEST)?.attack || []
+    )
+    const raderAsHost = computed(() => {
+      const rader = props.raders?.find(({ asRole }) => asRole === Role.HOST)
+      return rader ? computeRader(rader.board, rader.attack) : []
+    })
+    const raderAsGuest = computed(() => {
+      const rader = props.raders?.find(({ asRole }) => asRole === Role.GUEST)
+      return rader ? computeRader(rader.board, rader.attack) : []
+    })
+
     return {
       width: BOARD_W,
       height: BOARD_H,
-      hostCursor: computed(
-        () => props.cursors?.find(({ role }) => role === Role.HOST)?.cursor
-      ),
-      guestCursor: computed(
-        () => props.cursors?.find(({ role }) => role === Role.GUEST)?.cursor
-      ),
-      hostBoard: computed(
-        () => props.boards?.find(({ role }) => role === Role.HOST)?.board || []
-      ),
-      guestBoard: computed(
-        () => props.boards?.find(({ role }) => role === Role.GUEST)?.board || []
-      ),
-      hostAttack: computed(
-        () =>
-          props.attacks?.find(({ role }) => role === Role.HOST)?.attack || []
-      ),
-      guestAttack: computed(
-        () =>
-          props.attacks?.find(({ role }) => role === Role.GUEST)?.attack || []
-      ),
-      rader: computed(() => {
-        const board = props.raderFor
-        const attack = props.raderAs
-
-        const rader = Array(BOARD_W * BOARD_H).fill(-1)
-
-        if (board && attack) {
-          for (let i = 0; i < BOARD_W * BOARD_H; i++) {
-            let lmin = Infinity
-            if (getBit(attack, i)) {
-              for (let j = 0; j < BOARD_W * BOARD_H; j++) {
-                if (getBit(board, j)) {
-                  const ix = i % BOARD_W
-                  const iy = Math.floor(i / BOARD_W)
-                  const jx = j % BOARD_W
-                  const jy = Math.floor(j / BOARD_W)
-                  const l = Math.abs(ix - jx) + Math.abs(iy - jy)
-                  lmin = Math.min(lmin, l)
-                }
-              }
-            }
-            rader[i] = lmin < Infinity ? lmin : -1
-          }
-        }
-        return rader
-      }),
+      hostCursor,
+      guestCursor,
+      hostBoard,
+      guestBoard,
+      hostAttack,
+      guestAttack,
+      raderAsHost,
+      raderAsGuest,
       getBit,
+      and,
     }
   },
 })
@@ -109,21 +130,12 @@ export default defineComponent({
 
 .board {
   display: grid;
-  width: 300px;
+  width: 600px;
+  grid-gap: 10px;
 
   .cell {
     position: relative;
-    background-color: #eee;
-    margin: 1px;
-    border: 2px solid transparent;
-
-    &.is-focused--host {
-      border-color: $color-host;
-    }
-
-    &.is-focused--guest {
-      border-color: $color-guest;
-    }
+    background-color: rgba(255, 255, 255, 0.1);
 
     &::before {
       content: '';
@@ -131,48 +143,101 @@ export default defineComponent({
       margin-bottom: 100%;
     }
 
-    &.piece--host::after,
-    &.piece--guest::after {
-      content: '';
-      display: inline-block;
+    .cursor {
       position: absolute;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      margin: auto;
-      width: 50%;
-      height: 50%;
-    }
+      width: 100%;
+      height: 100%;
 
-    &.piece--host::after {
-      background-color: $color-host;
-    }
+      &::before,
+      &::after {
+        position: absolute;
+        font-family: 'Material Icons';
+        display: none;
+        content: 'visibility';
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+        font-size: 25px;
+      }
 
-    &.piece--guest::after {
-      background-color: $color-guest;
-    }
+      &::before {
+        color: $color-host;
+        top: 15%;
+        right: 12%;
+      }
 
-    &.attack--host {
-      background-color: lighten($color-host, 40%);
-    }
+      &::after {
+        color: $color-guest;
+        bottom: 15%;
+        left: 12%;
+      }
 
-    &.attack--guest {
-      background-color: lighten($color-guest, 40%);
+      &--host::before,
+      &--guest::after {
+        display: inline-block;
+      }
     }
 
     .rader {
       display: inline-block;
       position: absolute;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      font-size: 20px;
+      text-align: center;
+
+      &--as-host {
+        right: 15%;
+        bottom: 15%;
+        color: $color-guest;
+      }
+
+      &--as-guest {
+        top: 15%;
+        left: 15%;
+        color: $color-host;
+      }
+    }
+
+    .piece {
+      position: absolute;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      margin: auto;
-      width: 15px;
-      height: 15px;
-      text-align: center;
-      line-height: 15px;
+      width: 100%;
+      height: 100%;
+
+      &::before,
+      &::after {
+        content: 'favorite';
+        position: absolute;
+        font-family: 'Material Icons';
+        width: 22px;
+        height: 22px;
+        font-size: 25px;
+        line-height: 22px;
+        display: none;
+      }
+
+      &--host::before {
+        top: 15%;
+        left: 12%;
+        color: $color-host;
+        display: inline-block;
+      }
+      &--guest::after {
+        right: 12%;
+        bottom: 15%;
+        color: $color-guest;
+        display: inline-block;
+      }
+
+      &--host-attacked::before,
+      &--guest-attacked::after {
+        content: 'favorite_border';
+      }
     }
   }
 }

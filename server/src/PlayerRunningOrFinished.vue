@@ -14,23 +14,12 @@
         <div v-else>You lose</div>
       </template>
     </div>
-    <div
-      class="board-wrap board-wrap--host"
-      :class="{
-        'is-active':
-          tokenRole === Role.GUEST || gameStatus === GameStatus.FINISHED,
-      }"
-    >
-      <div class="badge-container">
-        <div class="badge badge--name">
-          {{ (host?.uid || '?').substr(0, 6) }}
-        </div>
-        <div v-if="winner === Role.HOST" class="badge badge--winner">
-          Winner
-        </div>
-      </div>
+    <div class="board-wrap">
       <board
-        :cursors="[{ role: Role.GUEST, cursor: guest?.cursor }]"
+        :cursors="[
+          { role: Role.HOST, cursor: host?.cursor },
+          { role: Role.GUEST, cursor: guest?.cursor },
+        ]"
         :boards="[
           {
             role: Role.HOST,
@@ -39,30 +28,6 @@
                 ? and(host?.board || [], guest?.attack || [])
                 : host?.board,
           },
-        ]"
-        :attacks="[{ role: Role.GUEST, attack: guest?.attack }]"
-        :rader-as="guest?.attack"
-        :rader-for="host?.board"
-      />
-    </div>
-    <div
-      class="board-wrap board-wrap--guest"
-      :class="{
-        'is-active':
-          tokenRole === Role.HOST || gameStatus === GameStatus.FINISHED,
-      }"
-    >
-      <div class="badge-container">
-        <div class="badge badge--name">
-          {{ (guest?.uid || '?').substr(0, 6) }}
-        </div>
-        <div v-if="winner === Role.GUEST" class="badge badge--winner">
-          Winner
-        </div>
-      </div>
-      <board
-        :cursors="[{ role: Role.HOST, cursor: host?.cursor }]"
-        :boards="[
           {
             role: Role.GUEST,
             board:
@@ -71,9 +36,14 @@
                 : guest?.board,
           },
         ]"
-        :attacks="[{ role: Role.HOST, attack: host?.attack }]"
-        :rader-as="host?.attack"
-        :rader-for="guest?.board"
+        :attacks="[
+          { role: Role.GUEST, attack: guest?.attack },
+          { role: Role.HOST, attack: host?.attack },
+        ]"
+        :raders="[
+          { asRole: Role.HOST, attack: host?.attack, board: guest?.board },
+          { asRole: Role.GUEST, attack: guest?.attack, board: host?.board },
+        ]"
       />
     </div>
     <div
@@ -159,46 +129,8 @@ export default defineComponent({
     display: inline-block;
     margin: 10px;
 
-    &:not(.is-active) {
-      opacity: 0.5;
-    }
-
     .board {
-      border: 2px solid #888;
       padding: 5px;
-    }
-
-    .badge-container {
-      text-align: left;
-
-      .badge {
-        display: inline-block;
-        width: 50px;
-        padding: 3px 5px;
-        font-size: 13px;
-        text-align: left;
-        color: #fff;
-
-        &--winner {
-          background-color: #f80;
-        }
-      }
-    }
-
-    &--host .board {
-      border-color: $color-host;
-    }
-
-    &--guest .board {
-      border-color: $color-guest;
-    }
-
-    &--host .badge--name {
-      background-color: $color-host;
-    }
-
-    &--guest .badge--name {
-      background-color: $color-guest;
     }
   }
 
