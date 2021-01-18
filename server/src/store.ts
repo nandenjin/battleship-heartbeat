@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
 import { and, isEqual, ntos, ston } from './util'
-import { Role } from './types'
+import { Mode, Role } from './types'
 import { socket } from './socket'
 
 export enum GameStatus {
@@ -32,6 +32,7 @@ export interface State {
     host: PlayerState | null
     guest: PlayerState | null
   }
+  mode: Mode
 }
 
 export const SET_USER = 'set_user'
@@ -46,6 +47,7 @@ export const SET_GUEST = 'set_guest'
 export const SET_BOARD = 'set_board'
 export const SET_ATTACK = 'set_attack'
 export const SUBMIT_BOARD = 'submit_board'
+export const SET_MODE = 'set_mode'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
@@ -63,6 +65,7 @@ export const store = createStore<State>({
       host: null,
       guest: null,
     },
+    mode: Mode.NONE,
   }),
   getters: {
     role: ({ uid, players }) =>
@@ -127,6 +130,9 @@ export const store = createStore<State>({
     [SET_ATTACK]: (state, attack: State['attack']) => {
       state.attack = attack
     },
+    [SET_MODE]: (state, mode: Mode) => {
+      state.mode = mode
+    },
   },
   actions: {
     [CREATE_GAME]: async ({ commit }) => {
@@ -151,6 +157,7 @@ export const store = createStore<State>({
 })
 
 socket.on('connect', () => socket.emit('setUid', { uid }))
+socket.on('mode', (mode: Mode) => store.commit(SET_MODE, mode))
 
 store.subscribe(({ type }, { gid }) => {
   if (type !== SET_GAME) return

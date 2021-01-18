@@ -3,7 +3,7 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import express from 'express'
 import consola from 'consola'
-import { Role } from './types'
+import { Mode, Role } from './types'
 import { HRS_SAVE_NUM } from './config'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -28,9 +28,11 @@ interface ServerPlayerState {
 const game: {
   host: ServerPlayerState | null
   guest: ServerPlayerState | null
+  mode: Mode
 } = {
   host: null,
   guest: null,
+  mode: Mode.NONE,
 }
 
 interface Client {
@@ -103,6 +105,7 @@ const setByRole = (role: Role, payload: Partial<ServerPlayerState>) => {
 const tellState = (socket: Socket) => {
   socket.emit('host', game.host)
   socket.emit('guest', game.guest)
+  socket.emit('mode', game.mode)
 }
 
 const broadcastState = () => clients.forEach(({ socket }) => tellState(socket))
@@ -186,6 +189,10 @@ osc.on(
 
         broadcastState()
         break
+      }
+      case '/mode': {
+        game.mode = args[0] as Mode
+        broadcastState()
       }
     }
   }

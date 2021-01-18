@@ -3,3 +3,9 @@ export enum Role {
   GUEST,
   AUDIENCE,
 }
+
+export enum Mode {
+  NONE = 0,
+  TRAINING,
+  MEASURING,
+}

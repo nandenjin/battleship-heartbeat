@@ -24,16 +24,27 @@
               : 'favorite_border'
           }}</span>
         </div>
-        <div class="hr-graph">
-          <span v-for="i of HRS_SAVE_NUM" :key="i">
-            <span
-              :style="`height: ${
-                ((host?.hrs?.[i - 1] - Math.min(...(host?.hrs || []))) /
-                  (Math.max(...(host?.hrs || [])) -
-                    Math.min(...(host?.hrs || [])))) *
-                100
-              }%`"
+        <div
+          v-if="
+            mode === Mode.TRAINING ||
+            (mode === Mode.MEASURING && Role.HOST !== myRole)
+          "
+          class="hr"
+        >
+          <span class="hr__graph"
+            ><span v-for="i of HRS_SAVE_NUM" :key="i">
+              <span
+                :style="`height: ${
+                  ((host?.hrs?.[i - 1] - Math.min(...(host?.hrs || []))) /
+                    (Math.max(...(host?.hrs || [])) -
+                      Math.min(...(host?.hrs || [])))) *
+                  100
+                }%`"
+              ></span
             ></span>
+            <span class="hr__number">{{
+              host?.hrs?.[host?.hrs?.length - 1]
+            }}</span>
           </span>
         </div>
       </div>
@@ -80,17 +91,28 @@
               : 'favorite_border'
           }}</span>
         </div>
-        <div class="hr-graph">
-          <span v-for="i of HRS_SAVE_NUM" :key="i">
-            <span
-              :style="`height: ${
-                ((guest?.hrs?.[i - 1] - Math.min(...(guest?.hrs || []))) /
-                  (Math.max(...(guest?.hrs || [])) -
-                    Math.min(...(guest?.hrs || [])))) *
-                100
-              }%`"
+        <div
+          v-if="
+            mode === Mode.TRAINING ||
+            (mode === Mode.MEASURING && Role.GUEST !== myRole)
+          "
+          class="hr"
+        >
+          <span class="hr__graph">
+            <span v-for="i of HRS_SAVE_NUM" :key="i">
+              <span
+                :style="`height: ${
+                  ((guest?.hrs?.[i - 1] - Math.min(...(guest?.hrs || []))) /
+                    (Math.max(...(guest?.hrs || [])) -
+                      Math.min(...(guest?.hrs || [])))) *
+                  100
+                }%`"
+              ></span
             ></span>
           </span>
+          <span class="hr__number">{{
+            guest?.hrs?.[guest?.hrs?.length - 1]
+          }}</span>
         </div>
       </div>
     </div>
@@ -114,7 +136,7 @@ import {
 import { Store, useStore } from 'vuex'
 import Board from './Board.vue'
 import { GameStatus, key, PlayerState, SET_ATTACK, State } from './store'
-import { Role } from './types'
+import { Role, Mode } from './types'
 import { pieceLength, and, setBit } from './util'
 import { PIECE_LENGTH, HRS_SAVE_NUM } from './config'
 
@@ -153,6 +175,8 @@ export default defineComponent({
       PIECE_LENGTH,
       HRS_SAVE_NUM,
       winner: computed(() => store.getters.winner),
+      mode: computed(() => store.state.mode),
+      Mode,
     })
 
     const onKeyDown = ({ key }: KeyboardEvent) => {
@@ -193,8 +217,13 @@ export default defineComponent({
           color: $color-host;
         }
 
-        .hr-graph > * > * {
-          background-color: $color-host;
+        .hr {
+          &__graph > * > * {
+            background-color: $color-host;
+          }
+          &__number {
+            color: $color-host;
+          }
         }
       }
 
@@ -203,8 +232,13 @@ export default defineComponent({
           color: $color-guest;
         }
 
-        .hr-graph > * > * {
-          background-color: $color-guest;
+        .hr {
+          &__graph > * > * {
+            background-color: $color-guest;
+          }
+          &__number {
+            color: $color-guest;
+          }
         }
       }
 
@@ -215,23 +249,29 @@ export default defineComponent({
         }
       }
 
-      .hr-graph {
-        width: 100px;
-        display: flex;
-        margin: 0 10px;
-        & > * {
-          flex: 1 1 auto;
-          display: inline-block;
-          height: 30px;
-          position: relative;
-
+      .hr {
+        &__graph {
+          width: 100px;
+          display: flex;
+          margin: 0 10px;
           & > * {
+            flex: 1 1 auto;
             display: inline-block;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            height: 30px;
+            position: relative;
+
+            & > * {
+              display: inline-block;
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+            }
           }
+        }
+
+        &__number {
+          font-size: 15px;
         }
       }
     }
