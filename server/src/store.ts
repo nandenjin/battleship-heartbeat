@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid'
 import { router } from './router'
 import { BOARD_H, BOARD_W } from './config'
 import { and, isEqual, ntos, ston } from './util'
-import { Mode, Role } from './types'
+import { ClientListItem, Controller, Mode, Role } from './types'
 import { socket } from './socket'
 
 export enum GameStatus {
@@ -33,6 +33,8 @@ export interface State {
     guest: PlayerState | null
   }
   mode: Mode
+  clients: ClientListItem[]
+  controllers: Controller[]
 }
 
 export const SET_USER = 'set_user'
@@ -48,6 +50,9 @@ export const SET_BOARD = 'set_board'
 export const SET_ATTACK = 'set_attack'
 export const SUBMIT_BOARD = 'submit_board'
 export const SET_MODE = 'set_mode'
+export const SET_CLIENTS = 'set_clients'
+export const SET_CONTROLLERS = 'set_controllers'
+export const ASSIGN_CONTROLLER_TO_CLIENT = 'assign_controller_to_client'
 
 export const key: InjectionKey<Store<State>> = Symbol()
 
@@ -66,6 +71,8 @@ export const store = createStore<State>({
       guest: null,
     },
     mode: Mode.NONE,
+    clients: [],
+    controllers: [],
   }),
   getters: {
     role: ({ uid, players }) =>
@@ -133,6 +140,12 @@ export const store = createStore<State>({
     [SET_MODE]: (state, mode: Mode) => {
       state.mode = mode
     },
+    [SET_CLIENTS]: (state, clients: ClientListItem[]) => {
+      state.clients = clients
+    },
+    [SET_CONTROLLERS]: (state, controllers: Controller[]) => {
+      state.controllers = controllers
+    },
   },
   actions: {
     [CREATE_GAME]: async ({ commit }) => {
@@ -153,11 +166,23 @@ export const store = createStore<State>({
         board: ntos(state.board),
       })
     },
+    [ASSIGN_CONTROLLER_TO_CLIENT]: (
+      _,
+      payload: { client: string; controller: string }
+    ) => {
+      socket.emit('assignControllerToClient', payload)
+    },
   },
 })
 
 socket.on('connect', () => socket.emit('setUid', { uid }))
 socket.on('mode', (mode: Mode) => store.commit(SET_MODE, mode))
+socket.on('clients', (clients: ClientListItem[]) =>
+  store.commit(SET_CLIENTS, clients)
+)
+socket.on('controllers', (controllers: Controller[]) =>
+  store.commit(SET_CONTROLLERS, controllers)
+)
 
 store.subscribe(({ type }, { gid }) => {
   if (type !== SET_GAME) return

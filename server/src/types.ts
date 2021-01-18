@@ -9,3 +9,16 @@ export enum Mode {
   TRAINING,
   MEASURING,
 }
+
+export interface ClientListItem {
+  id: string
+  uid?: string | null
+  controller?: string | null
+  role: Role
+}
+
+export interface Controller {
+  id: string
+  address: string
+  lastOpr?: number
+}

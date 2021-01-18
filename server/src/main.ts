@@ -2,8 +2,9 @@ import { resolve } from 'path'
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import express from 'express'
+import { v4 as uuid } from 'uuid'
 import consola from 'consola'
-import { Mode, Role } from './types'
+import { ClientListItem, Controller, Mode, Role } from './types'
 import { HRS_SAVE_NUM } from './config'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -21,17 +22,12 @@ interface ServerPlayerState {
   attack?: string
   board?: string
   cursor?: number
-  uid?: string
   hrs?: number[]
 }
 
 const game: {
-  host: ServerPlayerState | null
-  guest: ServerPlayerState | null
   mode: Mode
 } = {
-  host: null,
-  guest: null,
   mode: Mode.NONE,
 }
 
@@ -39,8 +35,13 @@ interface Client {
   id: string
   uid: string | null
   socket: Socket
+  controller?: string | null
+  state: ServerPlayerState
+  role: Role
 }
 const clients: Client[] = []
+
+const controllers: Controller[] = []
 
 io.on('connection', (socket: Socket) => {
   consola.log('Client connected')
@@ -48,6 +49,8 @@ io.on('connection', (socket: Socket) => {
     id: socket.id,
     uid: null,
     socket,
+    role: Role.AUDIENCE,
+    state: {},
   }
   clients.push(client)
 
@@ -58,33 +61,46 @@ io.on('connection', (socket: Socket) => {
 
   socket.on('setRole', ({ role }: { uid: string; role: Role }) => {
     const { uid } = client
-    if (!uid) {
-      consola.warn('Client requested to set role but uid is not set.')
-      return
-    }
-
     consola.log(`[setRole] ${uid} = ${Role[role]}`)
-    setByRole(role, { uid })
+    client.role = role
     broadcastState()
   })
 
   socket.on('submitBoard', ({ role, board }: { role: Role; board: string }) => {
     consola.log(`[submitBoard] ${Role[role]}`)
-    setByRole(role, { board })
+    client.state = { ...client.state, board }
     broadcastState()
   })
 
   socket.on('setCursor', ({ role, cursor }: { role: Role; cursor: number }) => {
     consola.log(`[setCursor] ${Role[role]}`)
-    setByRole(role, { cursor })
+    client.state = { ...client.state, cursor }
     broadcastState()
   })
 
   socket.on('setAttack', ({ role, attack }: { role: Role; attack: string }) => {
     consola.log(`[setAttack] ${Role[role]}`)
-    setByRole(role, { attack })
+    client.state = { ...client.state, attack }
     broadcastState()
   })
+
+  socket.on(
+    'assignControllerToClient',
+    ({
+      client: clientId,
+      controller: controllerId,
+    }: {
+      client: string
+      controller: string
+    }) => {
+      const client = clients.find(({ id }) => clientId === id)
+      if (client) {
+        client.controller = controllerId
+      } else {
+        consola.error(`Client not found: ${clientId}`)
+      }
+    }
+  )
 
   socket.on('disconnect', () => {
     clients.splice(clients.indexOf(client), 1)
@@ -94,18 +110,25 @@ io.on('connection', (socket: Socket) => {
   tellState(socket)
 })
 
-const setByRole = (role: Role, payload: Partial<ServerPlayerState>) => {
-  if (role === Role.HOST) {
-    game.host = { ...game.host, ...payload }
-  } else if (role === Role.GUEST) {
-    game.guest = { ...game.guest, ...payload }
-  }
-}
-
 const tellState = (socket: Socket) => {
-  socket.emit('host', game.host)
-  socket.emit('guest', game.guest)
+  const host = clients.find(({ role }) => role === Role.HOST)
+  socket.emit('host', host ? { ...host.state, uid: host.uid } : null)
+
+  const guest = clients.find(({ role }) => role === Role.GUEST)
+  socket.emit('guest', guest ? { ...guest.state, uid: guest.uid } : null)
+
   socket.emit('mode', game.mode)
+
+  socket.emit(
+    'clients',
+    clients.map<ClientListItem>(({ id, uid, role, controller }) => ({
+      id,
+      uid,
+      role,
+      controller,
+    }))
+  )
+  socket.emit('controllers', controllers)
 }
 
 const broadcastState = () => clients.forEach(({ socket }) => tellState(socket))
@@ -115,85 +138,56 @@ server.listen(3000, () => {
 })
 
 const osc = new OscServer(8888, '0.0.0.0')
-const controllers: string[] = []
 osc.on(
   'message',
   (
     [path, ...args]: [string, ...unknown[]],
     { address }: { address: string }
   ) => {
-    if (!controllers.includes(address)) {
-      controllers.push(address)
-      consola.log('Controller connected (new): ' + address)
+    let controller = controllers.find(c => c.address === address)
+    if (!controller) {
+      const id = uuid()
+      controller = { id, address }
+      controllers.push(controller)
+      consola.log(`Controller connected: ${address} = ${id}`)
     }
+    const connectedClients = clients.filter(
+      client => client.controller === controller?.id
+    )
     switch (path) {
       case '/opr': {
-        const index = controllers.indexOf(address)
-        if (index > 1) {
+        const opr = args[0] as number
+        controller.lastOpr = opr
+
+        if (connectedClients.length > 0) {
           consola.warn(
-            'Operation ignored because too many controllers are connected.'
+            'Operation will be ignored bacause no clients is linked.'
           )
-          return
-        }
-
-        let player: ServerPlayerState | null = null
-        if (index === 0) {
-          player = game.host
-        } else if (index === 1) {
-          player = game.guest
-        }
-
-        if (!player) {
-          consola.warn(
-            'Operation ignored bacause no role is set yet to the client.'
-          )
-          return
-        }
-
-        const { uid } = player
-
-        if (!uid) {
-          consola.warn('Operation ignored bacause uid is missing with client.')
-          return
-        }
-
-        const client = clients.find(({ uid: cuid }) => cuid === uid)
-
-        if (!client) {
-          consola.warn(
-            'Operation ignored bacause no clients is matched to uid.'
-          )
-          return
         }
 
         consola.log(`[Opr] ${args[0]} : ${address}`)
-        client.socket.emit('opr', args[0])
+        connectedClients.forEach(({ socket }) => socket.emit('opr', opr))
 
         break
       }
       case '/hr': {
-        const index = controllers.indexOf(address)
+        const client = connectedClients[0]
 
-        let player: ServerPlayerState | null = null
-        if (index === 0) {
-          player = game.host
-        } else if (index === 1) {
-          player = game.guest
+        if (client) {
+          client.state.hrs = client.state.hrs || []
+          client.state.hrs.push(args[0] as number)
+          client.state.hrs.splice(
+            0,
+            Math.max(client.state.hrs.length - HRS_SAVE_NUM, 0)
+          )
         }
 
-        if (player) {
-          player.hrs = player?.hrs || []
-          player.hrs.push(args[0] as number)
-          player.hrs.splice(0, Math.max(player.hrs.length - HRS_SAVE_NUM, 0))
-        }
-
-        broadcastState()
         break
       }
       case '/mode': {
         game.mode = args[0] as Mode
-        broadcastState()
       }
     }
+    broadcastState()
   }
 )
