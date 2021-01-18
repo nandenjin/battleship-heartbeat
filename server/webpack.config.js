@@ -54,7 +54,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: resolve(__dirname, './src/index.html'),
     }),
-    new CopyWebpackPlugin({ patterns: [{ from: 'static', to: 'dist' }] }),
+    new CopyWebpackPlugin({ patterns: [{ from: 'static', to: '.' }] }),
   ],
   devtool: 'inline-source-map',
   devServer: {
