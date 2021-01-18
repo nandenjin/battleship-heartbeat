@@ -19,6 +19,7 @@ export interface PlayerState {
   cursor: number
   board?: number[]
   attack?: number[]
+  hrs?: number[]
 }
 
 export interface State {

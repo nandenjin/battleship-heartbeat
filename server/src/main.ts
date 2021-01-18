@@ -4,6 +4,7 @@ import { Server, Socket } from 'socket.io'
 import express from 'express'
 import consola from 'consola'
 import { Role } from './types'
+import { HRS_SAVE_NUM } from './config'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { Server: OscServer } = require('node-osc')
@@ -21,6 +22,7 @@ interface ServerPlayerState {
   board?: string
   cursor?: number
   uid?: string
+  hrs?: number[]
 }
 
 const game: {
@@ -164,6 +166,25 @@ osc.on(
         consola.log(`[Opr] ${args[0]} : ${address}`)
         client.socket.emit('opr', args[0])
 
+        break
+      }
+      case '/hr': {
+        const index = controllers.indexOf(address)
+
+        let player: ServerPlayerState | null = null
+        if (index === 0) {
+          player = game.host
+        } else if (index === 1) {
+          player = game.guest
+        }
+
+        if (player) {
+          player.hrs = player?.hrs || []
+          player.hrs.push(args[0] as number)
+          player.hrs.splice(0, Math.max(player.hrs.length - HRS_SAVE_NUM, 0))
+        }
+
+        broadcastState()
         break
       }
     }

@@ -18,5 +18,11 @@
     "prettier",
     "prettier/@typescript-eslint",
     "prettier/vue"
-  ]
+  ],
+  "rules": {
+    "vue/no-parsing-error": [
+      "error",
+      { "invalid-first-character-of-tag-name": false }
+    ]
+  }
 }
