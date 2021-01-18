@@ -183,6 +183,10 @@ socket.on('clients', (clients: ClientListItem[]) =>
 socket.on('controllers', (controllers: Controller[]) =>
   store.commit(SET_CONTROLLERS, controllers)
 )
+socket.on('reset', () => {
+  store.commit(SET_BOARD, [])
+  store.commit(SET_ATTACK, [])
+})
 
 store.subscribe(({ type }, { gid }) => {
   if (type !== SET_GAME) return

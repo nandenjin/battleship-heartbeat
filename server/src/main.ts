@@ -186,6 +186,15 @@ osc.on(
       }
       case '/mode': {
         game.mode = args[0] as Mode
+        break
+      }
+      case '/restart': {
+        consola.info('Restarting...')
+        for (const client of clients) {
+          client.state = {}
+          client.socket.emit('reset')
+        }
+        break
       }
     }
     broadcastState()
