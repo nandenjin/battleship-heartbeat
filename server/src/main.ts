@@ -159,7 +159,7 @@ osc.on(
         const opr = args[0] as number
         controller.lastOpr = opr
 
-        if (connectedClients.length > 0) {
+        if (connectedClients.length === 0) {
           consola.warn(
             'Operation will be ignored bacause no clients is linked.'
           )
