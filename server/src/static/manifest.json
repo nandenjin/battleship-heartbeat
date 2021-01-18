@@ -1,0 +1,7 @@
+{
+  "name": "battleship-heartbeat",
+  "short_name": "battleship",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/"
+}

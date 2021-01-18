@@ -4,6 +4,7 @@ const { resolve } = require('path')
 const { DefinePlugin } = require('webpack')
 const { VueLoaderPlugin } = require('vue-loader')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
@@ -53,6 +54,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: resolve(__dirname, './src/index.html'),
     }),
+    new CopyWebpackPlugin({ patterns: [{ from: 'static', to: 'dist' }] }),
   ],
   devtool: 'inline-source-map',
   devServer: {
