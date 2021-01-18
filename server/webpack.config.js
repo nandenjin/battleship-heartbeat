@@ -35,7 +35,7 @@ module.exports = {
         loader: 'vue-loader',
       },
       {
-        test: /\.woff2?$/,
+        test: /\.(woff2?|ttf|eot)$/,
         loader: 'file-loader',
       },
     ],
@@ -50,7 +50,9 @@ module.exports = {
       __VUE_OPTIONS_API__: false,
       __VUE_PROD_DEVTOOLS__: false,
     }),
-    new HtmlWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: resolve(__dirname, './src/index.html'),
+    }),
   ],
   devtool: 'inline-source-map',
   devServer: {
