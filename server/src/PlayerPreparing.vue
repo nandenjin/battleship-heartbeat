@@ -35,7 +35,7 @@ import { PIECE_LENGTH } from './config'
 import Board from './Board.vue'
 import { getBit, invBit, isEmpty, pieceLength } from './util'
 
-const handleEnterEvent = (key: string, store: Store<State>) => {
+const handleCommitEvent = (key: string, store: Store<State>) => {
   const { commit, state, getters } = store
   const { board, cursor } = state
   const myState: PlayerState | null = getters.myState
@@ -47,6 +47,18 @@ const handleEnterEvent = (key: string, store: Store<State>) => {
   commit(SET_BOARD, invBit(board, cursor))
 }
 
+const handleSubmitEvent = (key: string, store: Store<State>) => {
+  const { dispatch, state, getters } = store
+  const { board } = state
+  const myState: PlayerState | null = getters.myState
+
+  if (key !== 'Enter') return
+  if (!myState) return
+
+  if (pieceLength(board) !== PIECE_LENGTH) return
+  dispatch(SUBMIT_BOARD)
+}
+
 export default defineComponent({
   components: { Board },
   setup() {
@@ -55,7 +67,8 @@ export default defineComponent({
     const onKeyDown = ({ key }: KeyboardEvent) => {
       // Permission
       if (![Role.HOST, Role.GUEST].includes(store.getters.role)) return
-      handleEnterEvent(key, store)
+      handleCommitEvent(key, store)
+      handleSubmitEvent(key, store)
     }
 
     onMounted(() => window.addEventListener('keydown', onKeyDown))

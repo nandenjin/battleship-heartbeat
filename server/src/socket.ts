@@ -19,6 +19,9 @@ socket.on('opr', (n: number) => {
     case 16:
       key = ' '
       break
+    case 32:
+      key = 'Enter'
+      break
   }
   const event = new KeyboardEvent('keydown', { key })
   window.dispatchEvent(event)
