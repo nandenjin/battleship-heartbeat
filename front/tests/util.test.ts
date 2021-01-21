@@ -12,9 +12,9 @@ import {
 } from '../src/util'
 
 describe('normalize()', () => {
-  it('Trims zero/negative values', () => {
+  it('Trims zero values', () => {
     expect(normalize([0, 0, 0])).toMatchObject([])
-    expect(normalize([0, -1, 0])).toMatchObject([])
+    expect(normalize([1, 0])).toMatchObject([1])
   })
 
   it('Not modifies nomalized values', () => {
